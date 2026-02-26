@@ -8,7 +8,6 @@ package com.skcraft.launcher.creator.model.creator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
-import com.skcraft.launcher.creator.model.swing.ListingType;
 import lombok.Data;
 
 import java.io.File;
@@ -24,7 +23,6 @@ public class Workspace {
     @JsonIgnore private File directory;
     private List<Pack> packs = Lists.newArrayList();
     private List<ManifestEntry> packageListingEntries = Lists.newArrayList();
-    private ListingType packageListingType = ListingType.STATIC;
 
     public void setPacks(List<Pack> packs) {
         this.packs = packs != null ? packs : Lists.<Pack>newArrayList();
@@ -32,10 +30,6 @@ public class Workspace {
 
     public void setPackageListingEntries(List<ManifestEntry> entries) {
         this.packageListingEntries = entries != null ? entries : Lists.newArrayList();
-    }
-
-    public void setPackageListingType(ListingType packageListingType) {
-        this.packageListingType = packageListingType != null ? packageListingType : ListingType.STATIC;
     }
 
     public boolean hasPack(File dir) {

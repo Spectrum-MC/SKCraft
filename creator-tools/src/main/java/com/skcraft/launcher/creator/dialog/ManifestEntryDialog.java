@@ -18,7 +18,6 @@ import java.awt.event.KeyEvent;
 public class ManifestEntryDialog extends JDialog {
 
     @Getter private final JSpinner prioritySpinner = new JSpinner();
-    @Getter private final JTextArea gameKeysText = new JTextArea(5, 30);
     @Getter private final JCheckBox includeCheck = new JCheckBox("Include in package listing");
 
     @Getter private final JButton okButton = new JButton("OK");
@@ -35,10 +34,7 @@ public class ManifestEntryDialog extends JDialog {
     }
 
     private void initComponents() {
-        gameKeysText.setFont(prioritySpinner.getFont());
-
         prioritySpinner.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
-        gameKeysText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
         JPanel container = new JPanel();
         container.setLayout(new MigLayout("insets dialog"));
@@ -48,9 +44,6 @@ public class ManifestEntryDialog extends JDialog {
         container.add(new JLabel("Priority:"));
         container.add(prioritySpinner, "span, split 2, w 50");
         container.add(new JLabel("(Greater is higher)"));
-
-        container.add(new JLabel("Game Keys:"));
-        container.add(SwingHelper.wrapScrollPane(gameKeysText), "span");
 
         container.add(okButton, "tag ok, span, split 2, sizegroup bttn, gaptop unrel");
         container.add(cancelButton, "tag cancel, sizegroup bttn");

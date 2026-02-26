@@ -6,18 +6,14 @@
 
 package com.skcraft.launcher.creator.model.creator;
 
-import com.google.common.collect.Lists;
 import com.skcraft.launcher.model.modpack.ManifestInfo;
 import lombok.Data;
-
-import java.util.List;
 
 @Data
 public class ManifestEntry implements Comparable<ManifestEntry> {
 
     private boolean selected = false;
     private ManifestInfo manifestInfo;
-    private List<String> gameKeys = Lists.newArrayList();
 
     @Override
     public int compareTo(ManifestEntry o) {

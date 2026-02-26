@@ -6,7 +6,6 @@
 
 package com.skcraft.launcher.creator.model.swing;
 
-import com.google.common.base.Joiner;
 import com.skcraft.launcher.creator.model.creator.ManifestEntry;
 
 import javax.swing.table.AbstractTableModel;
@@ -14,7 +13,6 @@ import java.util.List;
 
 public class ManifestEntryTableModel extends AbstractTableModel {
 
-    private final Joiner GAME_KEY_JOINER = Joiner.on(", ");
     private final List<ManifestEntry> entries;
 
     public ManifestEntryTableModel(List<ManifestEntry> entries) {
@@ -34,8 +32,6 @@ public class ManifestEntryTableModel extends AbstractTableModel {
                 return "Priority";
             case 4:
                 return "Location";
-            case 5:
-                return "Game Keys";
             default:
                 return null;
         }
@@ -53,8 +49,6 @@ public class ManifestEntryTableModel extends AbstractTableModel {
             case 3:
                 return Integer.class;
             case 4:
-                return String.class;
-            case 5:
                 return String.class;
             default:
                 return null;
@@ -88,7 +82,7 @@ public class ManifestEntryTableModel extends AbstractTableModel {
 
     @Override
     public int getColumnCount() {
-        return 6;
+        return 5;
     }
 
     @Override
@@ -111,9 +105,6 @@ public class ManifestEntryTableModel extends AbstractTableModel {
                 return entry.getManifestInfo().getPriority();
             case 4:
                 return entry.getManifestInfo().getLocation();
-            case 5:
-                List<String> gameKeys = entry.getGameKeys();
-                return gameKeys != null ? GAME_KEY_JOINER.join(gameKeys) : "";
             default:
                 return null;
         }

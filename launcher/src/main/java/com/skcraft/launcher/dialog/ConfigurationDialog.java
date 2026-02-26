@@ -42,8 +42,6 @@ public class ConfigurationDialog extends JDialog {
     private final JSpinner proxyPortText = new JSpinner();
     private final JTextField proxyUsernameText = new JTextField();
     private final JPasswordField proxyPasswordText = new JPasswordField();
-    private final FormPanel advancedPanel = new FormPanel();
-    private final JTextField gameKeyText = new JTextField();
     private final LinedBoxPanel buttonsPanel = new LinedBoxPanel(true);
     private final JButton okButton = new JButton(SharedLocale.tr("button.ok"));
     private final JButton cancelButton = new JButton(SharedLocale.tr("button.cancel"));
@@ -80,7 +78,6 @@ public class ConfigurationDialog extends JDialog {
         mapper.map(proxyPortText, "proxyPort");
         mapper.map(proxyUsernameText, "proxyUsername");
         mapper.map(proxyPasswordText, "proxyPassword");
-        mapper.map(gameKeyText, "gameKey");
 
         mapper.copyFromObject();
     }
@@ -107,10 +104,6 @@ public class ConfigurationDialog extends JDialog {
         proxySettingsPanel.addRow(new JLabel(SharedLocale.tr("options.proxyPassword")), proxyPasswordText);
         SwingHelper.removeOpaqueness(proxySettingsPanel);
         tabbedPane.addTab(SharedLocale.tr("options.proxyTab"), SwingHelper.alignTabbedPane(proxySettingsPanel));
-
-        advancedPanel.addRow(new JLabel(SharedLocale.tr("options.gameKey")), gameKeyText);
-        SwingHelper.removeOpaqueness(advancedPanel);
-        tabbedPane.addTab(SharedLocale.tr("options.advancedTab"), SwingHelper.alignTabbedPane(advancedPanel));
 
         buttonsPanel.addElement(logButton);
         buttonsPanel.addElement(aboutButton);

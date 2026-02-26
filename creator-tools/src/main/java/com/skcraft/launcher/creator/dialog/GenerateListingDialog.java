@@ -8,9 +8,6 @@ package com.skcraft.launcher.creator.dialog;
 
 import com.jidesoft.swing.SearchableUtils;
 import com.jidesoft.swing.TableSearchable;
-import com.skcraft.launcher.creator.Creator;
-import com.skcraft.launcher.creator.model.swing.ListingType;
-import com.skcraft.launcher.creator.model.swing.ListingTypeComboBoxModel;
 import com.skcraft.launcher.swing.DefaultTable;
 import com.skcraft.launcher.swing.DirectoryField;
 import com.skcraft.launcher.swing.SwingHelper;
@@ -25,9 +22,7 @@ import java.awt.event.KeyEvent;
 public class GenerateListingDialog extends JDialog {
 
     @Getter private final DirectoryField destDirField = new DirectoryField();
-    @Getter private final JComboBox<ListingType> listingTypeCombo = new JComboBox<>(new ListingTypeComboBoxModel());
     @Getter private final JTable manifestsTable = new DefaultTable();
-    @Getter private final JLabel gameKeyWarning = new JLabel("Selected listing type won't support adding modpacks using 'game keys'.", SwingHelper.createIcon(Creator.class, "warning_icon.png"), SwingConstants.LEFT);
 
     @Getter private final JButton editManifestButton = new JButton("Modify...");
 
@@ -57,10 +52,6 @@ public class GenerateListingDialog extends JDialog {
 
         container.add(new JLabel("Output Directory:"));
         container.add(destDirField, "span");
-
-        container.add(new JLabel("Package Listing Type:"));
-        container.add(listingTypeCombo, "span");
-        container.add(gameKeyWarning, "span, skip 1, hidemode 3");
 
         container.add(new JLabel("Modpacks to Include:"), "span, gaptop unrel");
         container.add(SwingHelper.wrapScrollPane(manifestsTable), "grow, pushy, span, w 500:650, h 170");

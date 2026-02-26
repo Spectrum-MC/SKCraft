@@ -17,9 +17,9 @@ import com.skcraft.launcher.creator.dialog.GenerateListingDialog;
 import com.skcraft.launcher.creator.dialog.ManifestEntryDialog;
 import com.skcraft.launcher.creator.model.creator.ManifestEntry;
 import com.skcraft.launcher.creator.model.creator.Workspace;
-import com.skcraft.launcher.creator.model.swing.ListingType;
 import com.skcraft.launcher.creator.model.swing.ManifestEntryTableModel;
 import com.skcraft.launcher.dialog.ProgressDialog;
+import com.skcraft.launcher.model.modpack.PackageList;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.SwingExecutor;
@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class GenerateListingController {
+    private static final String LISTING_FILENAME = "packages.json";
 
     private final GenerateListingDialog dialog;
     private final Workspace workspace;
@@ -53,16 +54,10 @@ public class GenerateListingController {
         dialog.getManifestsTableAdjuster().adjustColumns();
 
         initListeners();
-
-        setListingType(workspace.getPackageListingType());
     }
 
     public void setOutputDir(File dir) {
         dialog.getDestDirField().setPath(dir.getAbsolutePath());
-    }
-
-    public void setListingType(ListingType type) {
-        dialog.getListingTypeCombo().setSelectedItem(type);
     }
 
     public void show() {
@@ -121,11 +116,6 @@ public class GenerateListingController {
             }
         });
 
-        dialog.getListingTypeCombo().addItemListener(e -> {
-            ListingType type = (ListingType) e.getItem();
-            dialog.getGameKeyWarning().setVisible(!type.isGameKeyCompatible());
-        });
-
         dialog.getEditManifestButton().addActionListener(e -> {
             Optional<ManifestEntry> optional = getSelectedManifest();
             if (optional.isPresent()) {
@@ -165,25 +155,20 @@ public class GenerateListingController {
             return false;
         }
 
-        ListingType listingType = (ListingType) dialog.getListingTypeCombo().getSelectedItem();
         File destDir = new File(path);
         destDir.mkdirs();
-        File file = new File(destDir, listingType.getFilename());
+        File file = new File(destDir, LISTING_FILENAME);
 
         workspace.setPackageListingEntries(selected);
-        workspace.setPackageListingType(listingType);
         Persistence.commitAndForget(workspace);
 
         SettableProgress progress = new SettableProgress("Generating package listing...", -1);
 
-        Deferred<?> deferred = Deferreds.makeDeferred(executor.submit(() -> listingType.generate(selected)))
+        Deferred<?> deferred = Deferreds.makeDeferred(executor.submit(() -> generateListing(selected)))
                 .thenTap(() -> progress.set("Deleting older package listing files...", -1))
                 .thenApply(input -> {
-                    for (ListingType otherListingType : ListingType.values()) {
-                        File f = new File(destDir, otherListingType.getFilename());
-                        if (f.exists()) {
-                            f.delete();
-                        }
+                    if (file.exists()) {
+                        file.delete();
                     }
 
                     return input;
@@ -198,13 +183,7 @@ public class GenerateListingController {
                     }
                 })
                 .handleAsync(v -> {
-                    if (listingType.isGameKeyCompatible()) {
-                        SwingHelper.showMessageDialog(dialog, "Successfully generated package listing.", "Success", null, JOptionPane.INFORMATION_MESSAGE);
-                    } else {
-                        SwingHelper.showMessageDialog(dialog, "Successfully generated package listing.\n\n" +
-                                "Note that any modpacks with game keys set were not added.",
-                                "Success", null, JOptionPane.INFORMATION_MESSAGE);
-                    }
+                    SwingHelper.showMessageDialog(dialog, "Successfully generated package listing.", "Success", null, JOptionPane.INFORMATION_MESSAGE);
                     dialog.dispose();
                     SwingHelper.browseDir(destDir, dialog);
                 }, ex -> {}, SwingExecutor.INSTANCE);
@@ -213,6 +192,16 @@ public class GenerateListingController {
         SwingHelper.addErrorDialogCallback(dialog, deferred);
 
         return true;
+    }
+
+    private String generateListing(List<ManifestEntry> entries) throws IOException {
+        PackageList list = new PackageList();
+        list.setPackages(Lists.newArrayList());
+        list.setMinimumVersion(PackageList.MIN_VERSION);
+        for (ManifestEntry entry : entries) {
+            list.getPackages().add(entry.getManifestInfo());
+        }
+        return Persistence.writeValueAsString(list, Persistence.L2F_LIST_PRETTY_PRINTER);
     }
 
 }

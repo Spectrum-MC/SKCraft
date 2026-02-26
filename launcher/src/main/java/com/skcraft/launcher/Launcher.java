@@ -8,7 +8,6 @@ package com.skcraft.launcher;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.google.common.base.Strings;
 import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -342,14 +341,7 @@ public final class Launcher {
      * @return the packages URL
      */
     public URL getPackagesURL() {
-        try {
-            String key = Strings.nullToEmpty(getConfig().getGameKey());
-            return HttpRequest.url(
-                    String.format(getProperties().getProperty("packageListUrl"),
-                            URLEncoder.encode(key, "UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return HttpRequest.url(getProperties().getProperty("packageListUrl"));
     }
 
 
@@ -359,14 +351,7 @@ public final class Launcher {
      * @return the java manifest URL
      */
     public URL getJavaManifestURL() {
-        try {
-            String key = Strings.nullToEmpty(getConfig().getGameKey());
-            return HttpRequest.url(
-                    String.format(getProperties().getProperty("javaVersionManifestUrl"),
-                            URLEncoder.encode(key, "UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return HttpRequest.url(getProperties().getProperty("javaVersionManifestUrl"));
     }
 
     /**

@@ -33,7 +33,6 @@ public class Configuration {
     private int proxyPort = 8080;
     private String proxyUsername;
     private String proxyPassword;
-    private String gameKey;
     private boolean serverEnabled = false;
     private String serverHost;
     private int serverPort = 25565;
