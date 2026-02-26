@@ -6,6 +6,7 @@
 
 package com.skcraft.launcher.creator;
 
+import com.formdev.flatlaf.intellijthemes.FlatDraculaIJTheme;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.skcraft.launcher.Launcher;
@@ -75,7 +76,11 @@ public class Creator {
 
         SwingUtilities.invokeAndWait(() -> {
             SwingHelper.setSwingProperties("Modpack Creator");
-            SwingHelper.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            try {
+                FlatDraculaIJTheme.setup();
+            } catch (Throwable t) {
+                SwingHelper.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
 
             try {
                 creator.showWelcome();
