@@ -17,9 +17,9 @@ import com.skcraft.launcher.*;
 import com.skcraft.launcher.auth.Session;
 import com.skcraft.launcher.install.ZipExtract;
 import com.skcraft.launcher.launch.runtime.JavaRuntime;
-import com.skcraft.launcher.launch.runtime.JavaRuntimeFinder;
 import com.skcraft.launcher.model.minecraft.*;
 import com.skcraft.launcher.persistence.Persistence;
+import com.skcraft.launcher.util.BundledJava;
 import com.skcraft.launcher.util.Environment;
 import com.skcraft.launcher.util.Platform;
 import com.skcraft.launcher.util.SharedLocale;
@@ -278,15 +278,25 @@ public class Runner implements Callable<Process>, ProgressObservable {
         builder.setMaxMemory(maxMemory);
         builder.setPermGen(permGen);
 
-        try {
-            JavaRuntime selectedRuntime = JavaRuntime.fromDir(
-                    (new File(launcher.getBaseDir(), "runtime/" + instance.getJavaRuntime() + "/" + Environment.getInstance().getMojangOs())).toString()
-            );
-
-            builder.setRuntime(selectedRuntime);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        String runtimeComponent = instance.getJavaRuntime();
+        if (Strings.isNullOrEmpty(runtimeComponent)) {
+            throw new LauncherException("Missing Java runtime component for instance " + instance.getName(),
+                    tr("errors.updateRequiredError"));
         }
+
+        File runtimeDir;
+        try {
+            runtimeDir = BundledJava.getJavaDir(launcher, runtimeComponent);
+        } catch (Exception e) {
+            throw new LauncherException(e, tr("errors.updateRequiredError"));
+        }
+
+        JavaRuntime selectedRuntime = JavaRuntime.fromDir(runtimeDir);
+        if (selectedRuntime == null) {
+            throw new LauncherException("Missing bundled Java runtime at " + runtimeDir.getAbsolutePath(),
+                    tr("errors.updateRequiredError"));
+        }
+        builder.setRuntime(selectedRuntime);
 
 
         List<String> flags = builder.getFlags();

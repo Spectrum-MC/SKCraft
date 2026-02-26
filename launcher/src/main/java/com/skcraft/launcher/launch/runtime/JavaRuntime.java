@@ -22,7 +22,45 @@ public class JavaRuntime implements Comparable<JavaRuntime> {
 
 	@JsonCreator
 	public static JavaRuntime fromDir(String dir) {
-		return JavaRuntimeFinder.getRuntimeFromPath(dir);
+		return fromDir(new File(dir));
+	}
+
+	public static JavaRuntime fromDir(File target) {
+		if (target == null) {
+			return null;
+		}
+
+		// Normalize target to runtime root.
+		if (target.isFile()) {
+			target = target.getParentFile().getParentFile();
+		} else if ("bin".equals(target.getName())) {
+			target = target.getParentFile();
+		}
+
+		File releaseDir = target;
+		File releaseFile = new File(target, "release");
+		if (!releaseFile.isFile()) {
+			File jreRelease = new File(target, "jre/release");
+			if (jreRelease.isFile()) {
+				releaseDir = jreRelease.getParentFile();
+			}
+		}
+
+		File binFolder = new File(target, "bin");
+		if (!binFolder.isDirectory()) {
+			binFolder = new File(target, "jre/bin");
+		}
+
+		if (!binFolder.isDirectory()) {
+			return null;
+		}
+
+		JavaReleaseFile release = JavaReleaseFile.parseFromRelease(releaseDir);
+		if (release == null) {
+			return new JavaRuntime(binFolder.getParentFile(), null, true);
+		}
+
+		return new JavaRuntime(binFolder.getParentFile(), release.getVersion(), release.isArch64Bit());
 	}
 
 	@JsonIgnore

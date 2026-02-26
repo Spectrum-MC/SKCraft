@@ -87,12 +87,11 @@ public class JavaProcessBuilder {
     public List<String> buildCommand() throws IOException {
         List<String> command = new ArrayList<String>();
 
-        if (getRuntime() != null) {
-            File javaBinary = new File(getJavaBinPath(), "java");
-            command.add(javaBinary.getAbsolutePath());
-        } else {
-            command.add("java");
+        if (getRuntime() == null) {
+            throw new IOException("No Java runtime selected.");
         }
+        File javaBinary = new File(getJavaBinPath(), "java");
+        command.add(javaBinary.getAbsolutePath());
 
         command.addAll(flags);
 
@@ -106,7 +105,7 @@ public class JavaProcessBuilder {
 
         if (permGen > 0) {
             // If we know the Java version, only add permsize for 7 or older
-            if (getRuntime() == null || getRuntime().getMajorVersion() < 8) {
+            if (getRuntime().getMajorVersion() < 8) {
                 command.add("-XX:MaxPermSize=" + permGen + "M");
             }
         }
