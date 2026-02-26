@@ -62,9 +62,9 @@ public class Creator {
     private static File getAppDataDir() {
         String osName = System.getProperty("os.name").toLowerCase();
         if (osName.contains("win")) {
-            return new File(getFileChooseDefaultDir(), "SKCraft Modpack Creator");
+            return new File(getFileChooseDefaultDir(), "Spectrum Modpack Manager");
         } else {
-            return new File(System.getProperty("user.home"), ".skcraftcreator");
+            return new File(System.getProperty("user.home"), ".spectrummanager");
         }
     }
 
@@ -75,7 +75,7 @@ public class Creator {
         final Creator creator = new Creator();
 
         SwingUtilities.invokeAndWait(() -> {
-            SwingHelper.setSwingProperties("Modpack Creator");
+            SwingHelper.setSwingProperties("Spectrum Modpack Manager");
             try {
                 FlatDraculaIJTheme.setup();
             } catch (Throwable t) {
@@ -85,7 +85,7 @@ public class Creator {
             try {
                 creator.showWelcome();
             } catch (Exception e) {
-                SwingHelper.showErrorDialog(null, "Failed to start the modpack creator program.", "Start Error", e);
+                SwingHelper.showErrorDialog(null, "Failed to start the modpack manager program.", "Start Error", e);
             }
         });
     }

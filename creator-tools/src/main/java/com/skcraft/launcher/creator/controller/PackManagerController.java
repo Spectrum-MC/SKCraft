@@ -122,7 +122,7 @@ public class PackManagerController {
 
     public void show() {
         frame.setVisible(true);
-        frame.setTitle("Modpack Creator - [" + workspaceDir.getAbsolutePath() + "]");
+        frame.setTitle("Spectrum Modpack Manager - [" + workspaceDir.getAbsolutePath() + "]");
 
         initListeners();
         loadWorkspace();

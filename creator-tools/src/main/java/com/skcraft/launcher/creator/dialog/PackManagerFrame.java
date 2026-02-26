@@ -61,7 +61,7 @@ public class PackManagerFrame extends JFrame {
     @Getter private final JTable packTable = new DefaultTable();
 
     public PackManagerFrame() {
-        super("Modpack Creator");
+        super("Spectrum Modpack Manager");
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         initComponents();

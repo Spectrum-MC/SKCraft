@@ -27,7 +27,7 @@ public class WelcomeDialog extends JFrame {
     @Getter private final JList<RecentEntry> recentList = new JList<>();
 
     public WelcomeDialog() {
-        super("Modpack Creator");
+        super("Spectrum Modpack Manager");
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         initComponents();
