@@ -192,8 +192,7 @@ public class LaunchSupervisor {
                         tr("button.launchAnyway"),
                 };
 
-                String message = tr("runner.wrongJavaVersion",
-                        instance.getTitle(), javaVersion.getMajorVersion(), javaRuntime.getVersion());
+                String message = tr("runner.wrongJavaVersion", javaVersion.getMajorVersion(), javaRuntime.getVersion());
                 int picked = JOptionPane.showOptionDialog(null,
                         SwingHelper.htmlWrap(message),
                         tr("launcher.javaMismatchTitle"),

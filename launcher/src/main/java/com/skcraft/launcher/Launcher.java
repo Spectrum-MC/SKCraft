@@ -433,9 +433,6 @@ public final class Launcher {
         LauncherArguments options = new LauncherArguments();
         new JCommander(options).parse(args);
 
-        Integer bsVersion = options.getBootstrapVersion();
-        log.info(bsVersion != null ? "Bootstrap version " + bsVersion + " detected" : "Not bootstrapped");
-
         File dir = options.getDir();
         if (dir != null) {
             dir = dir.getAbsoluteFile();

@@ -58,16 +58,12 @@ public class TestServerBuilder {
         packagesContext.setAllowNullPathInfo(true);
         packagesContext.setHandler(new PackagesHandler(mapper, baseDir));
 
-        ContextHandler latestContext = new ContextHandler("/latest.json");
-        latestContext.setAllowNullPathInfo(true);
-        latestContext.setHandler(new LatestHandler(mapper));
-
         ContextHandler newsContext = new ContextHandler("/news.html");
         newsContext.setAllowNullPathInfo(true);
         newsContext.setHandler(new NewsHandler());
 
         ContextHandlerCollection contexts = new ContextHandlerCollection();
-        contexts.setHandlers(new Handler[]{packagesContext, latestContext, newsContext, rootContext});
+        contexts.setHandlers(new Handler[]{packagesContext, newsContext, rootContext});
 
         GzipHandler gzip = new GzipHandler();
         server.setHandler(gzip);

@@ -6,7 +6,6 @@ These are sample files for a project.
 
 In upload:
 
-- "latest.json" was written by hand
 - "packages.php" automatically generates the package listing, but your web server needs PHP installed to use it
 - "packages.json" is what packages.php would have generated, but you can write it by hand instead
 - "news.html" is your news page
@@ -27,6 +26,5 @@ If you had uploaded the contents of upload/ to http://example.com/launcher/, you
 
 newsUrl=http://example.com/launcher/news.html?version=%s
 packageListUrl=http://example.com/launcher/packages.php?key=%s
-selfUpdateUrl=http://example.com/launcher/latest.json
 
 (note: it uses the .php version here)
