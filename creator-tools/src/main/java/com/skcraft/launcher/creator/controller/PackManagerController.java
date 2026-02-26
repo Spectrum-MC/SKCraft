@@ -6,6 +6,7 @@
 
 package com.skcraft.launcher.creator.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -28,6 +29,7 @@ import com.skcraft.launcher.creator.controller.task.*;
 import com.skcraft.launcher.creator.dialog.AboutDialog;
 import com.skcraft.launcher.creator.dialog.*;
 import com.skcraft.launcher.creator.dialog.BuildDialog.BuildOptions;
+import com.skcraft.launcher.creator.dialog.BuilderConfigDialog.JavaRuntimeOption;
 import com.skcraft.launcher.creator.dialog.DeployServerDialog.DeployOptions;
 import com.skcraft.launcher.creator.model.creator.*;
 import com.skcraft.launcher.creator.model.swing.PackTableModel;
@@ -35,10 +37,13 @@ import com.skcraft.launcher.creator.server.TestServer;
 import com.skcraft.launcher.creator.server.TestServerBuilder;
 import com.skcraft.launcher.creator.swing.PackDirectoryFilter;
 import com.skcraft.launcher.dialog.*;
+import com.skcraft.launcher.model.java.JavaManifest;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
 import com.skcraft.launcher.swing.SwingHelper;
+import com.skcraft.launcher.util.Environment;
+import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.MorePaths;
 import com.skcraft.launcher.util.SwingExecutor;
 import lombok.Getter;
@@ -53,9 +58,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -77,6 +86,7 @@ public class PackManagerController {
     @Getter private final TestServer testServer;
 
     private File lastServerDestDir;
+    private List<JavaRuntimeOption> cachedJavaRuntimeOptions;
 
     private final PackManagerFrame frame;
     private PackTableModel packTableModel;
@@ -449,7 +459,7 @@ public class PackManagerController {
                 File file = pack.getConfigFile();
                 BuilderConfig config = Persistence.read(file, BuilderConfig.class);
 
-                if (BuilderConfigDialog.showEditor(frame, config)) {
+                if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
                     writeBuilderConfig(pack, config);
                     updatePackInWorkspace(pack);
                 }
@@ -703,7 +713,7 @@ public class PackManagerController {
         File dir;
 
         do {
-            if (BuilderConfigDialog.showEditor(frame, config)) {
+            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
                 dir = new File(workspaceDir, config.getName());
             } else {
                 return;
@@ -763,7 +773,7 @@ public class PackManagerController {
             BuilderConfig config = new BuilderConfig();
             addDefaultConfig(config);
 
-            if (BuilderConfigDialog.showEditor(frame, config)) {
+            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
                 if (writeBuilderConfig(pack, config)) {
                     pack.createGuideFolders();
                     addPackToWorkspace(pack);
@@ -856,6 +866,69 @@ public class PackManagerController {
     public static String generateVersionFromDate() {
         Date today = Calendar.getInstance().getTime();
         return VERSION_DATE_FORMAT.format(today);
+    }
+
+    private List<JavaRuntimeOption> getJavaRuntimeOptions() {
+        if (cachedJavaRuntimeOptions != null) {
+            return cachedJavaRuntimeOptions;
+        }
+
+        try {
+            Map<String, HashMap<String, JavaManifest[]>> javaManifests = HttpRequest
+                    .get(launcher.getJavaManifestURL())
+                    .execute()
+                    .expectResponseCode(200)
+                    .returnContent()
+                    .asJson(new TypeReference<HashMap<String, HashMap<String, JavaManifest[]>>>() {
+                    });
+
+            // We don't care that much about the os since it's just for the combobox
+            // so we'll take the user's one as each jre should have all os anyway
+            String currentOs = Environment.getInstance().getMojangOs();
+            Map<String, JavaManifest[]> osRuntimes = javaManifests.get(currentOs);
+            if (osRuntimes == null || osRuntimes.isEmpty()) {
+                throw new IOException("No Java runtimes available for " + currentOs);
+            }
+
+            List<JavaRuntimeOption> runtimes = new ArrayList<>();
+            for (Map.Entry<String, JavaManifest[]> entry : osRuntimes.entrySet()) {
+                String runtimeId = entry.getKey();
+                int major = extractMajor(entry.getValue());
+                String label = major > 0 ? runtimeId + " (Java " + major + ")" : runtimeId;
+                runtimes.add(new JavaRuntimeOption(runtimeId, label));
+            }
+            runtimes.sort((a, b) -> a.id.compareToIgnoreCase(b.id));
+            cachedJavaRuntimeOptions = Collections.unmodifiableList(runtimes);
+        } catch (Exception e) {
+            SwingHelper.showErrorDialog(frame,
+                    "Failed to load Java runtime list from the Java manifest. The JVM dropdown may be empty.",
+                    "Java Runtime Manifest Error", e);
+            cachedJavaRuntimeOptions = Collections.emptyList();
+        }
+
+        return cachedJavaRuntimeOptions;
+    }
+
+    private int extractMajor(JavaManifest[] manifests) {
+        if (manifests == null || manifests.length == 0 || manifests[0] == null
+                || manifests[0].getVersion() == null || manifests[0].getVersion().getName() == null) {
+            return -1;
+        }
+
+        String version = manifests[0].getVersion().getName();
+        String[] parts = version.split("[\\._+\\-]");
+        if (parts.length == 0) {
+            return -1;
+        }
+
+        try {
+            if ("1".equals(parts[0]) && parts.length > 1) {
+                return Integer.parseInt(parts[1]);
+            }
+            return Integer.parseInt(parts[0]);
+        } catch (NumberFormatException ignored) {
+            return -1;
+        }
     }
 
 }

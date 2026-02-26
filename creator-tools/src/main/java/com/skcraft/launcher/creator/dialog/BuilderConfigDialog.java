@@ -21,13 +21,15 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BuilderConfigDialog extends JDialog {
 
     private final JTextField nameText = new JTextField(20);
     private final JTextField titleText = new JTextField(30);
     private final JTextField gameVersionText = new JTextField(10);
-    private final JTextField jvmVersionText = new JTextField(10);
+    private final JComboBox<JavaRuntimeOption> jvmVersionBox = new JComboBox<>();
     private final JTextArea launchFlagsArea = new JTextArea(10, 40);
     private final JTextArea userFilesIncludeArea = new JTextArea(15, 40);
     private final JTextArea userFilesExcludeArea = new JTextArea(8, 40);
@@ -35,12 +37,14 @@ public class BuilderConfigDialog extends JDialog {
     private FeaturePatternTableModel featuresModel;
 
     private final BuilderConfig config;
+    private final List<JavaRuntimeOption> javaRuntimeOptions;
     private boolean saved = false;
 
-    public BuilderConfigDialog(Window parent, BuilderConfig config) {
+    public BuilderConfigDialog(Window parent, BuilderConfig config, List<JavaRuntimeOption> javaRuntimeOptions) {
         super(parent, "Modpack Properties", ModalityType.DOCUMENT_MODAL);
 
         this.config = config;
+        this.javaRuntimeOptions = new ArrayList<>(javaRuntimeOptions);
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         initComponents();
@@ -57,7 +61,6 @@ public class BuilderConfigDialog extends JDialog {
         nameText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
         titleText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
         gameVersionText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
-        jvmVersionText.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
         launchFlagsArea.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
         userFilesIncludeArea.setComponentPopupMenu(TextFieldPopupMenu.INSTANCE);
 
@@ -99,7 +102,8 @@ public class BuilderConfigDialog extends JDialog {
                 return;
             }
 
-            if (jvmVersionText.getText().trim().isEmpty()) {
+            JavaRuntimeOption javaRuntime = (JavaRuntimeOption) jvmVersionBox.getSelectedItem();
+            if (javaRuntime == null || javaRuntime.id.trim().isEmpty()) {
                 SwingHelper.showErrorDialog(BuilderConfigDialog.this, "The 'JVM Version' field must be filled.", "Input Error");
                 return;
             }
@@ -130,7 +134,7 @@ public class BuilderConfigDialog extends JDialog {
         container.add(gameVersionText, "span");
 
         container.add(new JLabel("JVM Version:"));
-        container.add(jvmVersionText, "span");
+        container.add(jvmVersionBox, "span");
 
         return container;
     }
@@ -212,7 +216,28 @@ public class BuilderConfigDialog extends JDialog {
         SwingHelper.setTextAndResetCaret(nameText, config.getName());
         SwingHelper.setTextAndResetCaret(titleText, config.getTitle());
         SwingHelper.setTextAndResetCaret(gameVersionText, config.getGameVersion());
-        SwingHelper.setTextAndResetCaret(jvmVersionText, config.getJavaRuntime());
+
+        DefaultComboBoxModel<JavaRuntimeOption> model = new DefaultComboBoxModel<>();
+        String selectedRuntime = config.getJavaRuntime();
+        boolean selectedInModel = false;
+        for (JavaRuntimeOption runtime : javaRuntimeOptions) {
+            model.addElement(runtime);
+            if (runtime.id.equals(selectedRuntime)) {
+                selectedInModel = true;
+            }
+        }
+        if (!Strings.isNullOrEmpty(selectedRuntime) && !selectedInModel) {
+            model.insertElementAt(new JavaRuntimeOption(selectedRuntime, selectedRuntime), 0);
+        }
+        jvmVersionBox.setModel(model);
+        for (int i = 0; i < model.getSize(); i++) {
+            JavaRuntimeOption option = model.getElementAt(i);
+            if (option.id.equals(selectedRuntime)) {
+                jvmVersionBox.setSelectedItem(option);
+                break;
+            }
+        }
+
         SwingHelper.setTextAndResetCaret(launchFlagsArea, SwingHelper.listToLines(config.getLaunchModifier().getFlags()));
         SwingHelper.setTextAndResetCaret(userFilesIncludeArea, SwingHelper.listToLines(config.getUserFiles().getInclude()));
         SwingHelper.setTextAndResetCaret(userFilesExcludeArea, SwingHelper.listToLines(config.getUserFiles().getExclude()));
@@ -224,7 +249,8 @@ public class BuilderConfigDialog extends JDialog {
         config.setName(nameText.getText().trim());
         config.setTitle(Strings.emptyToNull(titleText.getText().trim()));
         config.setGameVersion(gameVersionText.getText().trim());
-        config.setJavaRuntime(jvmVersionText.getText().trim());
+        JavaRuntimeOption selectedRuntime = (JavaRuntimeOption) jvmVersionBox.getSelectedItem();
+        config.setJavaRuntime(selectedRuntime != null ? selectedRuntime.id.trim() : null);
 
         LaunchModifier launchModifier = config.getLaunchModifier();
         FnPatternList userFiles = config.getUserFiles();
@@ -234,10 +260,25 @@ public class BuilderConfigDialog extends JDialog {
         userFiles.setExclude(SwingHelper.linesToList(userFilesExcludeArea.getText()));
     }
 
-    public static boolean showEditor(Window window, BuilderConfig config) {
-        BuilderConfigDialog dialog = new BuilderConfigDialog(window, config);
+    public static boolean showEditor(Window window, BuilderConfig config, List<JavaRuntimeOption> javaRuntimeOptions) {
+        BuilderConfigDialog dialog = new BuilderConfigDialog(window, config, javaRuntimeOptions);
         dialog.setVisible(true);
         return dialog.saved;
+    }
+
+    public static final class JavaRuntimeOption {
+        public final String id;
+        public final String label;
+
+        public JavaRuntimeOption(String id, String label) {
+            this.id = id;
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
     }
 
 }
