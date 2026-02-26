@@ -28,8 +28,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
 
@@ -53,7 +51,6 @@ public class LauncherFrame extends JFrame {
     private final JButton launchButton = new JButton(SharedLocale.tr("launcher.launch"));
     private final JButton refreshButton = new JButton(SharedLocale.tr("launcher.checkForUpdates"));
     private final JButton optionsButton = new JButton(SharedLocale.tr("launcher.options"));
-    private final JButton selfUpdateButton = new JButton(SharedLocale.tr("launcher.updateLauncher"));
     private final JCheckBox updateCheck = new JCheckBox(SharedLocale.tr("launcher.downloadUpdates"));
 
     /**
@@ -85,21 +82,10 @@ public class LauncherFrame extends JFrame {
 
     private void initComponents() {
         JPanel container = createContainerPanel();
-        container.setLayout(new MigLayout("fill, insets dialog", "[][]push[][]", "[grow][]"));
+        container.setLayout(new MigLayout("fill, insets dialog", "[][]push[]", "[grow][]"));
 
         webView = createNewsPanel();
         splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, instanceScroll, webView);
-        selfUpdateButton.setVisible(launcher.getUpdateManager().getPendingUpdate());
-
-        launcher.getUpdateManager().addPropertyChangeListener(new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals("pendingUpdate")) {
-                    selfUpdateButton.setVisible((Boolean) evt.getNewValue());
-
-                }
-            }
-        });
 
         updateCheck.setSelected(true);
         instancesTable.setModel(instancesModel);
@@ -111,7 +97,6 @@ public class LauncherFrame extends JFrame {
         SwingHelper.flattenJSplitPane(splitPane);
         container.add(refreshButton);
         container.add(updateCheck);
-        container.add(selfUpdateButton);
         container.add(optionsButton);
         container.add(launchButton);
 
@@ -132,15 +117,7 @@ public class LauncherFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 loadInstances();
-                launcher.getUpdateManager().checkForUpdate(LauncherFrame.this);
                 webView.browse(launcher.getNewsURL(), false);
-            }
-        });
-
-        selfUpdateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                launcher.getUpdateManager().performUpdate(LauncherFrame.this);
             }
         });
 
@@ -394,8 +371,7 @@ public class LauncherFrame extends JFrame {
 
         @Override
         public void gameClosed() {
-            Window newLauncherWindow = launcher.showLauncherWindow();
-            launcher.getUpdateManager().checkForUpdate(newLauncherWindow);
+            launcher.showLauncherWindow();
         }
     }
 

@@ -18,7 +18,6 @@ import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.SwingHelper;
-import com.skcraft.launcher.update.UpdateManager;
 import com.skcraft.launcher.util.Environment;
 import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.SharedLocale;
@@ -64,7 +63,6 @@ public final class Launcher {
     @Getter private final AccountList accounts;
     @Getter private final AssetsRoot assets;
     @Getter private final LaunchSupervisor launchSupervisor = new LaunchSupervisor(this);
-    @Getter private final UpdateManager updateManager = new UpdateManager(this);
     @Getter private final InstanceTasks instanceTasks = new InstanceTasks(this);
     private final Environment env = Environment.getInstance();
 
@@ -104,8 +102,6 @@ public final class Launcher {
                 cleanupExtractDir();
             }
         });
-
-        updateManager.checkForUpdate(null);
     }
 
     /**
