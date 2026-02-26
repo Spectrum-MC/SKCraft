@@ -25,6 +25,10 @@ public class Version {
     @NonNull
     private String url;
 
+    @Getter
+    @Setter
+    private String type;
+
     public Version() {
     }
 

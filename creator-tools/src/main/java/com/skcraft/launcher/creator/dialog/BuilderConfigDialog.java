@@ -29,6 +29,7 @@ public class BuilderConfigDialog extends JDialog {
     private final JTextField nameText = new JTextField(20);
     private final JTextField titleText = new JTextField(30);
     private final JTextField gameVersionText = new JTextField(10);
+    private final JButton selectGameVersionButton = new JButton("Select...");
     private final JComboBox<JavaRuntimeOption> jvmVersionBox = new JComboBox<>();
     private final JTextArea launchFlagsArea = new JTextArea(10, 40);
     private final JTextArea userFilesIncludeArea = new JTextArea(15, 40);
@@ -38,13 +39,17 @@ public class BuilderConfigDialog extends JDialog {
 
     private final BuilderConfig config;
     private final List<JavaRuntimeOption> javaRuntimeOptions;
+    private final List<MinecraftVersionOption> minecraftVersionOptions;
     private boolean saved = false;
 
-    public BuilderConfigDialog(Window parent, BuilderConfig config, List<JavaRuntimeOption> javaRuntimeOptions) {
+    public BuilderConfigDialog(Window parent, BuilderConfig config,
+                               List<JavaRuntimeOption> javaRuntimeOptions,
+                               List<MinecraftVersionOption> minecraftVersionOptions) {
         super(parent, "Modpack Properties", ModalityType.DOCUMENT_MODAL);
 
         this.config = config;
         this.javaRuntimeOptions = new ArrayList<>(javaRuntimeOptions);
+        this.minecraftVersionOptions = new ArrayList<>(minecraftVersionOptions);
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         initComponents();
@@ -117,6 +122,19 @@ public class BuilderConfigDialog extends JDialog {
 
         TableSearchable tableSearchable = SearchableUtils.installSearchable(featuresTable);
         tableSearchable.setMainIndex(-1);
+
+        selectGameVersionButton.addActionListener(e -> {
+            String selected = MinecraftVersionDialog.showSelector(
+                    BuilderConfigDialog.this,
+                    minecraftVersionOptions,
+                    gameVersionText.getText().trim());
+            if (selected != null) {
+                gameVersionText.setText(selected);
+                gameVersionText.setCaretPosition(0);
+                gameVersionText.revalidate();
+                gameVersionText.repaint();
+            }
+        });
     }
 
     private JPanel createMainPanel() {
@@ -131,7 +149,8 @@ public class BuilderConfigDialog extends JDialog {
         container.add(titleText, "span");
 
         container.add(new JLabel("Game Version:"));
-        container.add(gameVersionText, "span");
+        container.add(gameVersionText, "split 2, growx");
+        container.add(selectGameVersionButton, "wrap");
 
         container.add(new JLabel("JVM Version:"));
         container.add(jvmVersionBox, "span");
@@ -260,8 +279,10 @@ public class BuilderConfigDialog extends JDialog {
         userFiles.setExclude(SwingHelper.linesToList(userFilesExcludeArea.getText()));
     }
 
-    public static boolean showEditor(Window window, BuilderConfig config, List<JavaRuntimeOption> javaRuntimeOptions) {
-        BuilderConfigDialog dialog = new BuilderConfigDialog(window, config, javaRuntimeOptions);
+    public static boolean showEditor(Window window, BuilderConfig config,
+                                     List<JavaRuntimeOption> javaRuntimeOptions,
+                                     List<MinecraftVersionOption> minecraftVersionOptions) {
+        BuilderConfigDialog dialog = new BuilderConfigDialog(window, config, javaRuntimeOptions, minecraftVersionOptions);
         dialog.setVisible(true);
         return dialog.saved;
     }
@@ -278,6 +299,21 @@ public class BuilderConfigDialog extends JDialog {
         @Override
         public String toString() {
             return label;
+        }
+    }
+
+    public static final class MinecraftVersionOption {
+        public final String id;
+        public final String type;
+
+        public MinecraftVersionOption(String id, String type) {
+            this.id = id;
+            this.type = type;
+        }
+
+        @Override
+        public String toString() {
+            return id;
         }
     }
 

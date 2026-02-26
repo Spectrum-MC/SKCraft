@@ -30,6 +30,7 @@ import com.skcraft.launcher.creator.dialog.AboutDialog;
 import com.skcraft.launcher.creator.dialog.*;
 import com.skcraft.launcher.creator.dialog.BuildDialog.BuildOptions;
 import com.skcraft.launcher.creator.dialog.BuilderConfigDialog.JavaRuntimeOption;
+import com.skcraft.launcher.creator.dialog.BuilderConfigDialog.MinecraftVersionOption;
 import com.skcraft.launcher.creator.dialog.DeployServerDialog.DeployOptions;
 import com.skcraft.launcher.creator.model.creator.*;
 import com.skcraft.launcher.creator.model.swing.PackTableModel;
@@ -38,6 +39,8 @@ import com.skcraft.launcher.creator.server.TestServerBuilder;
 import com.skcraft.launcher.creator.swing.PackDirectoryFilter;
 import com.skcraft.launcher.dialog.*;
 import com.skcraft.launcher.model.java.JavaManifest;
+import com.skcraft.launcher.model.minecraft.ReleaseList;
+import com.skcraft.launcher.model.minecraft.Version;
 import com.skcraft.launcher.model.modpack.LaunchModifier;
 import com.skcraft.launcher.persistence.Persistence;
 import com.skcraft.launcher.swing.PopupMouseAdapter;
@@ -87,6 +90,7 @@ public class PackManagerController {
 
     private File lastServerDestDir;
     private List<JavaRuntimeOption> cachedJavaRuntimeOptions;
+    private List<MinecraftVersionOption> cachedMinecraftVersionOptions;
 
     private final PackManagerFrame frame;
     private PackTableModel packTableModel;
@@ -459,7 +463,7 @@ public class PackManagerController {
                 File file = pack.getConfigFile();
                 BuilderConfig config = Persistence.read(file, BuilderConfig.class);
 
-                if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
+                if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions(), getMinecraftVersionOptions())) {
                     writeBuilderConfig(pack, config);
                     updatePackInWorkspace(pack);
                 }
@@ -713,7 +717,7 @@ public class PackManagerController {
         File dir;
 
         do {
-            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
+            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions(), getMinecraftVersionOptions())) {
                 dir = new File(workspaceDir, config.getName());
             } else {
                 return;
@@ -773,7 +777,7 @@ public class PackManagerController {
             BuilderConfig config = new BuilderConfig();
             addDefaultConfig(config);
 
-            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions())) {
+            if (BuilderConfigDialog.showEditor(frame, config, getJavaRuntimeOptions(), getMinecraftVersionOptions())) {
                 if (writeBuilderConfig(pack, config)) {
                     pack.createGuideFolders();
                     addPackToWorkspace(pack);
@@ -929,6 +933,34 @@ public class PackManagerController {
         } catch (NumberFormatException ignored) {
             return -1;
         }
+    }
+
+    private List<MinecraftVersionOption> getMinecraftVersionOptions() {
+        if (cachedMinecraftVersionOptions != null) {
+            return cachedMinecraftVersionOptions;
+        }
+
+        try {
+            ReleaseList releases = HttpRequest
+                    .get(launcher.propUrl("versionManifestUrl"))
+                    .execute()
+                    .expectResponseCode(200)
+                    .returnContent()
+                    .asJson(ReleaseList.class);
+
+            List<MinecraftVersionOption> versions = new ArrayList<>();
+            for (Version version : releases.getVersions()) {
+                versions.add(new MinecraftVersionOption(version.getId(), version.getType()));
+            }
+            cachedMinecraftVersionOptions = Collections.unmodifiableList(versions);
+        } catch (Exception e) {
+            SwingHelper.showErrorDialog(frame,
+                    "Failed to load Minecraft version list from the version manifest.",
+                    "Minecraft Version Manifest Error", e);
+            cachedMinecraftVersionOptions = Collections.emptyList();
+        }
+
+        return cachedMinecraftVersionOptions;
     }
 
 }
