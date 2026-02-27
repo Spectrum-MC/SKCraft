@@ -14,8 +14,8 @@ public class MinecraftArgumentsSerializer extends StdSerializer<GameArgument> {
 	}
 
 	@Override
-	public void serialize(GameArgument value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonGenerationException {
-		if (value.getValues().size() == 1 && (value.getRules() == null || value.getRules().size() == 0)) {
+	public void serialize(GameArgument value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
+		if (value.getValues().size() == 1 && (value.getRules() == null || value.getRules().isEmpty())) {
 			jgen.writeString(value.getValues().get(0));
 		} else {
 			provider.defaultSerializeValue(value, jgen);

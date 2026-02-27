@@ -10,7 +10,12 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
+/**
+ * @TODO: Spectrum will have its own pastebin-like service with more debug data (os, java version used, etc...)
+ * @deprecated
+ */
 public class PastebinPoster {
     private static final int CONNECT_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;
@@ -21,9 +26,9 @@ public class PastebinPoster {
         thread.start();
     }
 
-    public static interface PasteCallback {
-        public void handleSuccess(String url);
-        public void handleError(String err);
+    public interface PasteCallback {
+        void handleSuccess(String url);
+        void handleError(String err);
     }
     
     private static class PasteProcessor implements Runnable {
@@ -53,13 +58,13 @@ public class PastebinPoster {
                 out = conn.getOutputStream();
                 
                 out.write(("api_option=paste"
-                        + "&api_dev_key=" + URLEncoder.encode("4867eae74c6990dbdef07c543cf8f805", "utf-8")
-                        + "&api_paste_code=" + URLEncoder.encode(code, "utf-8")
-                        + "&api_paste_private=" + URLEncoder.encode("0", "utf-8")
-                        + "&api_paste_name=" + URLEncoder.encode("", "utf-8")
-                        + "&api_paste_expire_date=" + URLEncoder.encode("1D", "utf-8")
-                        + "&api_paste_format=" + URLEncoder.encode("text", "utf-8")
-                        + "&api_user_key=" + URLEncoder.encode("", "utf-8")).getBytes());
+                        + "&api_dev_key=" + URLEncoder.encode("4867eae74c6990dbdef07c543cf8f805", StandardCharsets.UTF_8)
+                        + "&api_paste_code=" + URLEncoder.encode(code, StandardCharsets.UTF_8)
+                        + "&api_paste_private=" + URLEncoder.encode("0", StandardCharsets.UTF_8)
+                        + "&api_paste_name=" + URLEncoder.encode("", StandardCharsets.UTF_8)
+                        + "&api_paste_expire_date=" + URLEncoder.encode("1D", StandardCharsets.UTF_8)
+                        + "&api_paste_format=" + URLEncoder.encode("text", StandardCharsets.UTF_8)
+                        + "&api_user_key=" + URLEncoder.encode("", StandardCharsets.UTF_8)).getBytes());
                 out.flush();
                 out.close();
                 

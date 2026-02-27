@@ -15,7 +15,7 @@ public class ArgumentValueSerializer extends StdSerializer<List<String>> {
 	}
 
 	@Override
-	public void serialize(List<String> value, JsonGenerator jgen, SerializerProvider provider) throws IOException, JsonGenerationException {
+	public void serialize(List<String> value, JsonGenerator jgen, SerializerProvider provider) throws IOException {
 		if (value.size() == 1) {
 			jgen.writeString(value.get(0));
 		} else {

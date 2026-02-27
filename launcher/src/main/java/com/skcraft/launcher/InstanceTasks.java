@@ -30,7 +30,7 @@ public class InstanceTasks {
     public ObservableFuture<Instance> delete(Window window, Instance instance) {
         // Execute the deleter
         Remover resetter = new Remover(instance);
-        ObservableFuture<Instance> future = new ObservableFuture<Instance>(
+        ObservableFuture<Instance> future = new ObservableFuture<>(
                 launcher.getExecutor().submit(resetter), resetter);
 
         // Show progress
@@ -44,7 +44,7 @@ public class InstanceTasks {
     public ObservableFuture<Instance> hardUpdate(Window window, Instance instance) {
         // Execute the resetter
         HardResetter resetter = new HardResetter(instance);
-        ObservableFuture<Instance> future = new ObservableFuture<Instance>(
+        ObservableFuture<Instance> future = new ObservableFuture<>(
                 launcher.getExecutor().submit(resetter), resetter);
 
         // Show progress
@@ -57,7 +57,7 @@ public class InstanceTasks {
 
     public ObservableFuture<InstanceList> reloadInstances(Window window) {
         InstanceList.Enumerator loader = launcher.getInstances().createEnumerator();
-        ObservableFuture<InstanceList> future = new ObservableFuture<InstanceList>(launcher.getExecutor().submit(loader), loader);
+        ObservableFuture<InstanceList> future = new ObservableFuture<>(launcher.getExecutor().submit(loader), loader);
 
         ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.checkingTitle"), SharedLocale.tr("launcher.checkingStatus"));
         SwingHelper.addErrorDialogCallback(window, future);

@@ -58,12 +58,7 @@ public class LimitLinesDocumentListener implements DocumentListener {
 
         if (!this.isRemoving) {
             this.isRemoving = true;
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    removeLines(e);
-                }
-            });
+            SwingUtilities.invokeLater(() -> removeLines(e));
         }
     }
 

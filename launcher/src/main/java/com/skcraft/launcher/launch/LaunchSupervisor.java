@@ -84,7 +84,7 @@ public class LaunchSupervisor {
                 // Execute the updater
                 Updater updater = new Updater(launcher, instance);
                 updater.setOnline(options.getUpdatePolicy() == UpdatePolicy.ALWAYS_UPDATE || session.isOnline());
-                ObservableFuture<Instance> future = new ObservableFuture<Instance>(
+                ObservableFuture<Instance> future = new ObservableFuture<>(
                         launcher.getExecutor().submit(updater), updater);
 
                 // Show progress
@@ -92,20 +92,10 @@ public class LaunchSupervisor {
                 SwingHelper.addErrorDialogCallback(window, future);
 
                 // Update the list of instances after updating
-                future.addListener(new Runnable() {
-                    @Override
-                    public void run() {
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                listener.instancesUpdated();
-                            }
-                        });
-                    }
-                }, SwingExecutor.INSTANCE);
+                future.addListener(() -> SwingUtilities.invokeLater(listener::instancesUpdated), SwingExecutor.INSTANCE);
 
                 // On success, launch also
-                Futures.addCallback(future, new FutureCallback<Instance>() {
+                Futures.addCallback(future, new FutureCallback<>() {
                     @Override
                     public void onSuccess(Instance result) {
                         launch(window, instance, session, listener);
@@ -133,10 +123,10 @@ public class LaunchSupervisor {
 
         // Show process for the process retrieval
         ProgressDialog.showProgress(
-                window, processFuture, SharedLocale.tr("launcher.launchingTItle"), tr("launcher.launchingStatus", instance.getTitle()));
+                window, processFuture, SharedLocale.tr("launcher.launchingTitle"), tr("launcher.launchingStatus", instance.getTitle()));
 
         // If the process is started, get rid of this window
-        Futures.addCallback(processFuture, new FutureCallback<Process>() {
+        Futures.addCallback(processFuture, new FutureCallback<>() {
             @Override
             public void onSuccess(Process result) {
                 SwingUtilities.invokeLater(listener::gameStarted);
@@ -163,7 +153,7 @@ public class LaunchSupervisor {
         }, sameThreadExecutor());
 
         // Hook up launch listener
-        Futures.addCallback(future, new FutureCallback<ProcessConsoleFrame>() {
+        Futures.addCallback(future, new FutureCallback<>() {
             @Override
             public void onSuccess(@Nullable ProcessConsoleFrame result) {
                 // gameStarted was only invoked on success above, so only call gameClosed on success

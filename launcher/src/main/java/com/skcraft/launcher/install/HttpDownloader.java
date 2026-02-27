@@ -43,11 +43,11 @@ public class HttpDownloader implements Downloader {
     @Getter @Setter private int retryDelay = 2000;
     @Getter @Setter private int tryCount = 3;
 
-    private List<HttpDownloadJob> queue = new ArrayList<HttpDownloadJob>();
-    private final Set<String> usedKeys = new HashSet<String>();
+    private List<HttpDownloadJob> queue = new ArrayList<>();
+    private final Set<String> usedKeys = new HashSet<>();
 
-    private final List<HttpDownloadJob> running = new ArrayList<HttpDownloadJob>();
-    private final List<HttpDownloadJob> failed = new ArrayList<HttpDownloadJob>();
+    private final List<HttpDownloadJob> running = new ArrayList<>();
+    private final List<HttpDownloadJob> failed = new ArrayList<>();
     private long downloaded = 0;
     private long total = 0;
     private int left = 0;
@@ -100,7 +100,7 @@ public class HttpDownloader implements Downloader {
 
     @Override
     public File download(URL url, String key, long size, String name) {
-        List<URL> urls = new ArrayList<URL>();
+        List<URL> urls = new ArrayList<>();
         urls.add(url);
         return download(urls, key, size, name);
     }
@@ -120,7 +120,7 @@ public class HttpDownloader implements Downloader {
                 Executors.newFixedThreadPool(threadCount));
 
         try {
-            List<ListenableFuture<?>> futures = new ArrayList<ListenableFuture<?>>();
+            List<ListenableFuture<?>> futures = new ArrayList<>();
 
             synchronized (this) {
                 for (HttpDownloadJob job : queue) {
@@ -135,7 +135,7 @@ public class HttpDownloader implements Downloader {
             }
 
             synchronized (this) {
-                if (failed.size() > 0) {
+                if (!failed.isEmpty()) {
                     throw new IOException(failed.size() + " file(s) could not be downloaded");
                 }
             }
@@ -164,14 +164,14 @@ public class HttpDownloader implements Downloader {
             return tr("downloader.downloadingItem", running.get(0).getName()) +
                     "\n" + running.get(0).getStatus() +
                     "\n" + failMessage;
-        } else if (running.size() > 0) {
+        } else if (!running.isEmpty()) {
             StringBuilder builder = new StringBuilder();
             for (HttpDownloadJob job : running) {
                 builder.append("\n");
                 builder.append(job.getStatus());
             }
             return tr("downloader.downloadingList", queue.size(), left, failed.size()) +
-                    builder.toString() +
+                    builder +
                     "\n" + failMessage;
         } else {
             return SharedLocale.tr("downloader.noDownloads");

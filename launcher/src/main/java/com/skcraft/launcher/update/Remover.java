@@ -59,7 +59,7 @@ public class Remover implements Callable<Instance>, ProgressObservable {
             LauncherUtils.interruptibleDelete(instance.getDir(), failures);
         }
 
-        if (failures.size() > 0) {
+        if (!failures.isEmpty()) {
             throw new LauncherException(failures.size() + " failed to delete",
                      tr("instanceDeleter.failures", failures.size()));
         }

@@ -45,7 +45,7 @@ public class MavenName {
 		if (size > 3) {
 			classifier = split.get(3);
 
-			if (classifier.indexOf("@") != -1) {
+			if (classifier.contains("@")) {
 				List<String> parts = Splitter.on('@').splitToList(classifier);
 
 				classifier = parts.get(0);

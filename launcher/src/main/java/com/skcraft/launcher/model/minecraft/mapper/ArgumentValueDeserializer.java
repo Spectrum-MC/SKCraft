@@ -19,7 +19,7 @@ public class ArgumentValueDeserializer extends StdDeserializer<List<String>> {
 	}
 
 	@Override
-	public List<String> deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public List<String> deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
 		if (!jp.hasCurrentToken()) jp.nextToken();
 
 		if (jp.getCurrentToken() == JsonToken.START_ARRAY) {

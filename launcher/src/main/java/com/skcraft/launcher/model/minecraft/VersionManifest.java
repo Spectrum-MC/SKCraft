@@ -33,7 +33,7 @@ public class VersionManifest {
     private LinkedHashSet<Library> libraries;
     private JavaVersion javaVersion;
     private SidedData<LoggingConfig> logging;
-    private Map<String, Artifact> downloads = new HashMap<String, Artifact>();
+    private Map<String, Artifact> downloads = new HashMap<>();
 
     public String getAssetId() {
         return getAssetIndex() != null

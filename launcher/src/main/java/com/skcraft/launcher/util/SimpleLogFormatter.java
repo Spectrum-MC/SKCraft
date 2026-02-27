@@ -15,7 +15,7 @@ import java.util.logging.*;
 @Log
 public final class SimpleLogFormatter extends Formatter {
 
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
 
     @Override
     public String format(LogRecord record) {
@@ -33,8 +33,8 @@ public final class SimpleLogFormatter extends Formatter {
                 PrintWriter pw = new PrintWriter(sw);
                 record.getThrown().printStackTrace(pw);
                 pw.close();
-                sb.append(sw.toString());
-            } catch (Exception e) {
+                sb.append(sw);
+            } catch (Exception ignored) {
             }
         }
 

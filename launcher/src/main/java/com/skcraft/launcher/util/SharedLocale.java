@@ -6,6 +6,7 @@
 
 package com.skcraft.launcher.util;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.java.Log;
 
@@ -21,26 +22,22 @@ import java.util.logging.Level;
 @Log
 public class SharedLocale {
 
-    private static Locale locale = Locale.getDefault();
-    private static ResourceBundle bundle;
-
     /**
-     * Get the current locale.
+     * -- GETTER --
+     *  Get the current locale.
      *
      * @return the current locale
      */
-    public static Locale getLocale() {
-        return locale;
-    }
-
+    @Getter
+    private static Locale locale = Locale.getDefault();
     /**
-     * Get the current resource bundle.
+     * -- GETTER --
+     *  Get the current resource bundle.
      *
      * @return the current resource bundle, or null if not available
      */
-    public static ResourceBundle getBundle() {
-        return bundle;
-    }
+    @Getter
+    private static ResourceBundle bundle;
 
     /**
      * Translate a string.

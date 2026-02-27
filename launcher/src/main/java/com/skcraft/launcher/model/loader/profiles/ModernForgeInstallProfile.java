@@ -28,11 +28,6 @@ public class ModernForgeInstallProfile {
     private String minecraft;
 
     public List<ProcessorEntry> toProcessorEntries(final String loaderName) {
-        return Lists.transform(getProcessors(), new Function<InstallProcessor, ProcessorEntry>() {
-            @Override
-            public ProcessorEntry apply(InstallProcessor input) {
-                return new ProcessorEntry(loaderName, input);
-            }
-        });
+        return Lists.transform(getProcessors(), input -> new ProcessorEntry(loaderName, input));
     }
 }

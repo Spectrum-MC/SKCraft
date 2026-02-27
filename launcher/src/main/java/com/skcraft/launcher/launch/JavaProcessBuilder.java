@@ -126,7 +126,7 @@ public class JavaProcessBuilder {
      */
     public static List<String> splitArgs(String str) {
         Matcher matcher = argsPattern.matcher(str);
-        List<String> parts = new ArrayList<String>();
+        List<String> parts = new ArrayList<>();
         while (matcher.find()) {
             parts.add(matcher.group(1));
         }

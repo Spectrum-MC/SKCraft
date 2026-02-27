@@ -56,8 +56,8 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
     @Getter @Setter
     private boolean online;
 
-    private List<URL> librarySources = new ArrayList<URL>();
-    private List<URL> assetsSources = new ArrayList<URL>();
+    private final List<URL> librarySources = new ArrayList<>();
+    private final List<URL> assetsSources = new ArrayList<>();
 
     private ProgressObservable progress = new DefaultProgress(-1, SharedLocale.tr("instanceUpdater.preparingUpdate"));
 
@@ -252,6 +252,10 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
                 break;
             }
         }
+        if (javaManifest == null) {
+            throw new Exception("Unable to find a Java manifest for the instance's Java runtime: " + instance.getJavaRuntime());
+        }
+
         JavaFile[] files = readJavaManifest(javaManifest);
 
         File jvmDir = BundledJava.getJavaDir(launcher, instance.getJavaRuntime());

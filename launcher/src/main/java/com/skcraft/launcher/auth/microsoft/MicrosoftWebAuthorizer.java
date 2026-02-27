@@ -48,8 +48,7 @@ public class MicrosoftWebAuthorizer {
 			query.add("redirect_uri", redirectUri);
 			query.add("prompt", "select_account");
 
-			interactive = new URI("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?"
-					+ query.toString());
+			interactive = new URI("https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize?" + query);
 		} catch (URISyntaxException e) {
 			throw new AuthenticationException(e, "Failed to generate OAuth URL");
 		}

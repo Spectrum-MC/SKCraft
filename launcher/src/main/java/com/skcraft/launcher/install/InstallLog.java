@@ -24,17 +24,13 @@ public class InstallLog {
 
     @JsonIgnore
     private File baseDir;
-    private Map<String, Set<String>> entries = new HashMap<String, Set<String>>();
+    private Map<String, Set<String>> entries = new HashMap<>();
     @JsonIgnore
-    private Set<String> cache = new HashSet<String>();
+    private Set<String> cache = new HashSet<>();
 
     public synchronized void add(@NonNull String group, @NonNull String entry) {
         cache.add(entry);
-        Set<String> subEntries = entries.get(group);
-        if (subEntries == null) {
-            subEntries = new HashSet<String>();
-            entries.put(group, subEntries);
-        }
+        Set<String> subEntries = entries.computeIfAbsent(group, k -> new HashSet<>());
         subEntries.add(entry);
     }
 

@@ -40,13 +40,13 @@ public class Manifest extends BaseManifest {
     private String gameVersion;
     @JsonProperty("launch")
     private LaunchModifier launchModifier;
-    private List<Feature> features = new ArrayList<Feature>();
+    private List<Feature> features = new ArrayList<>();
     @JsonManagedReference("manifest")
-    private List<ManifestEntry> tasks = new ArrayList<ManifestEntry>();
+    private List<ManifestEntry> tasks = new ArrayList<>();
     @Getter @Setter @JsonIgnore
     private Installer installer;
     private VersionManifest versionManifest;
-    private Map<String, LoaderManifest> loaders = new HashMap<String, LoaderManifest>();
+    private Map<String, LoaderManifest> loaders = new HashMap<>();
 
     @JsonIgnore
     public URL getLibrariesUrl() {

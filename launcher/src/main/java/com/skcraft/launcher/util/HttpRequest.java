@@ -21,6 +21,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static com.skcraft.launcher.LauncherUtils.checkInterrupted;
@@ -37,13 +38,20 @@ public class HttpRequest implements Closeable, ProgressObservable {
     private static final int READ_BUFFER_SIZE = 1024 * 8;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final Map<String, String> headers = new HashMap<String, String>();
+    private final Map<String, String> headers = new HashMap<>();
     private String method;
     @Getter
     private final URL url;
     private String contentType;
     private byte[] body;
     private HttpURLConnection conn;
+    /**
+     * -- GETTER --
+     *  Get the input stream.
+     *
+     * @return the input stream
+     */
+    @Getter
     private InputStream inputStream;
     private int redirectCount;
 
@@ -279,15 +287,6 @@ public class HttpRequest implements Closeable, ProgressObservable {
     }
 
     /**
-     * Get the input stream.
-     *
-     * @return the input stream
-     */
-    public InputStream getInputStream() {
-        return inputStream;
-    }
-
-    /**
      * Check if a connection was ever made
      *
      * @return True if a connection is available, false otherwise
@@ -366,7 +365,7 @@ public class HttpRequest implements Closeable, ProgressObservable {
                     contentLength = len;
                 }
             }
-        } catch (NumberFormatException e) {
+        } catch (NumberFormatException ignored) {
         }
 
         try {
@@ -483,7 +482,7 @@ public class HttpRequest implements Closeable, ProgressObservable {
      * Used with {@link #bodyForm(Form)}.
      */
     public final static class Form {
-        public final List<String> elements = new ArrayList<String>();
+        public final List<String> elements = new ArrayList<>();
 
         private Form() {
         }
@@ -496,13 +495,9 @@ public class HttpRequest implements Closeable, ProgressObservable {
          * @return this object
          */
         public Form add(String key, String value) {
-            try {
-                elements.add(URLEncoder.encode(key, "UTF-8") +
-                        "=" + URLEncoder.encode(value, "UTF-8"));
-                return this;
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException(e);
-            }
+            elements.add(URLEncoder.encode(key, StandardCharsets.UTF_8) +
+                    "=" + URLEncoder.encode(value, StandardCharsets.UTF_8));
+            return this;
         }
 
         @Override
@@ -635,9 +630,8 @@ public class HttpRequest implements Closeable, ProgressObservable {
          * @param out the output stream
          * @return this object
          * @throws java.io.IOException  on I/O error
-         * @throws InterruptedException on interruption
          */
-        public BufferedResponse saveContent(OutputStream out) throws IOException, InterruptedException {
+        public BufferedResponse saveContent(OutputStream out) throws IOException {
             out.write(data);
 
             return this;

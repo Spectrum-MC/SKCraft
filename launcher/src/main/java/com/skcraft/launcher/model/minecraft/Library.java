@@ -223,7 +223,7 @@ public class Library {
      */
     public void setServerreq(boolean value) {
         if (value && getDownloads() == null) {
-            setUrl("https://libraries.minecraft.net/"); // TODO get this from properties?
+            setUrl("https://libraries.minecraft.net/"); // @TODO get this from properties? => YES
         }
     }
 

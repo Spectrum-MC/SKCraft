@@ -38,7 +38,7 @@ import java.util.logging.Level;
 public final class Persistence {
 
     private static final ObjectMapper mapper = new ObjectMapper();
-    private static final WeakHashMap<Object, ByteSink> bound = new WeakHashMap<Object, ByteSink>();
+    private static final WeakHashMap<Object, ByteSink> bound = new WeakHashMap<>();
     public static final DefaultPrettyPrinter L2F_LIST_PRETTY_PRINTER;
 
     static {
@@ -76,12 +76,9 @@ public final class Persistence {
             }
         }
 
-        Closer closer = Closer.create();
-        try {
+        try (Closer closer = Closer.create()) {
             OutputStream os = closer.register(sink.openBufferedStream());
             mapper.writeValue(os, object);
-        } finally {
-            closer.close();
         }
     }
 
@@ -124,17 +121,14 @@ public final class Persistence {
 
             try {
                 object = cls.newInstance();
-            } catch (InstantiationException e1) {
-                throw new RuntimeException(
-                        "Failed to construct object with no-arg constructor", e1);
-            } catch (IllegalAccessException e1) {
+            } catch (InstantiationException | IllegalAccessException e1) {
                 throw new RuntimeException(
                         "Failed to construct object with no-arg constructor", e1);
             }
         } finally {
             try {
                 closer.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
 

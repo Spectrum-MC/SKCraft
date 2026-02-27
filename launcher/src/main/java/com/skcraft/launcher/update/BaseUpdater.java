@@ -67,7 +67,7 @@ public abstract class BaseUpdater {
 
     private final Launcher launcher;
     private final Environment environment = Environment.getInstance();
-    private final List<Runnable> executeOnCompletion = new ArrayList<Runnable>();
+    private final List<Runnable> executeOnCompletion = new ArrayList<>();
 
     protected BaseUpdater(@NonNull Launcher launcher) {
         this.launcher = launcher;
@@ -121,13 +121,8 @@ public abstract class BaseUpdater {
 
             Collections.sort(features);
 
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    new FeatureSelectionDialog(ProgressDialog.getLastDialog(), features, BaseUpdater.this)
-                            .setVisible(true);
-                }
-            });
+            SwingUtilities.invokeLater(() -> new FeatureSelectionDialog(ProgressDialog.getLastDialog(), features, BaseUpdater.this)
+                    .setVisible(true));
 
             synchronized (this) {
                 this.wait();
@@ -158,21 +153,18 @@ public abstract class BaseUpdater {
             entry.install(installer, currentLog, updateCache, extras);
         }
 
-        executeOnCompletion.add(new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<String, Set<String>> entry : previousLog.getEntrySet()) {
-                    for (String path : entry.getValue()) {
-                        if (!currentLog.has(path)) {
-                            new File(contentDir, path).delete();
-                        }
+        executeOnCompletion.add(() -> {
+            for (Map.Entry<String, Set<String>> entry : previousLog.getEntrySet()) {
+                for (String path : entry.getValue()) {
+                    if (!currentLog.has(path)) {
+                        new File(contentDir, path).delete();
                     }
                 }
-
-                writeDataFile(logPath, currentLog);
-                writeDataFile(cachePath, updateCache);
-                writeDataFile(featuresPath, featuresCache);
             }
+
+            writeDataFile(logPath, currentLog);
+            writeDataFile(cachePath, updateCache);
+            writeDataFile(featuresPath, featuresCache);
         });
 
         return manifest;
@@ -234,7 +226,7 @@ public abstract class BaseUpdater {
     protected void installJar(@NonNull Installer installer,
                               @NonNull VersionManifest.Artifact artifact,
                               @NonNull File jarFile,
-                              @NonNull URL url) throws InterruptedException {
+                              @NonNull URL url) {
         // If the JAR does not exist, install it
         if (!jarFile.exists()) {
             long size = artifact.getSize();
@@ -264,7 +256,7 @@ public abstract class BaseUpdater {
                 .asJson(AssetsIndex.class);
 
         // Keep track of duplicates
-        Set<String> downloading = new HashSet<String>();
+        Set<String> downloading = new HashSet<>();
 
         for (Map.Entry<String, Asset> entry : index.getObjects().entrySet()) {
             checkInterrupted();
@@ -274,7 +266,7 @@ public abstract class BaseUpdater {
             File targetFile = assetsRoot.getObjectPath(entry.getValue());
 
             if (!targetFile.exists() && !downloading.contains(path)) {
-                List<URL> urls = new ArrayList<URL>();
+                List<URL> urls = new ArrayList<>();
                 for (URL sourceUrl : sources) {
                     try {
                         urls.add(concat(sourceUrl, path));
@@ -318,7 +310,7 @@ public abstract class BaseUpdater {
                 File targetFile = new File(librariesDir, path);
 
                 if (!targetFile.exists()) {
-                    List<URL> urls = new ArrayList<URL>();
+                    List<URL> urls = new ArrayList<>();
                     for (URL sourceUrl : sources) {
                         try {
                             urls.add(concat(sourceUrl, path));

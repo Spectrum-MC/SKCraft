@@ -10,7 +10,7 @@ import java.util.logging.Level;
 
 @Log
 public class JavaReleaseFile {
-	private Map<String, String> backingMap;
+	private final Map<String, String> backingMap;
 
 	private JavaReleaseFile(Map<String, String> releaseDetails) {
 		this.backingMap = releaseDetails;

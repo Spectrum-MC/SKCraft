@@ -39,7 +39,7 @@ public class InstanceList {
 
     private final Launcher launcher;
     @Getter
-    private final List<Instance> instances = new ArrayList<Instance>();
+    private final List<Instance> instances = new ArrayList<>();
 
     @Getter
     private HashMap<String, JavaManifest[]> javaVersions = new HashMap<>();
@@ -88,7 +88,7 @@ public class InstanceList {
      * @return a list of instances
      */
     public synchronized List<Instance> getSelected() {
-        List<Instance> selected = new ArrayList<Instance>();
+        List<Instance> selected = new ArrayList<>();
         for (Instance instance : instances) {
             if (instance.isSelected()) {
                 selected.add(instance);
@@ -143,7 +143,7 @@ public class InstanceList {
                         .execute()
                         .expectResponseCode(200)
                         .returnContent()
-                        .asJson(new TypeReference<HashMap<String, HashMap<String, JavaManifest[]>>>() {
+                        .asJson(new TypeReference<>() {
                         });
 
                 String currentOs = Environment.getInstance().getMojangOs();

@@ -16,7 +16,7 @@ public class MinecraftArgumentsDeserializer extends StdDeserializer<GameArgument
 	}
 
 	@Override
-	public GameArgument deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+	public GameArgument deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
 		if (!jp.hasCurrentToken()) jp.nextToken();
 
 		if (jp.getCurrentToken() == JsonToken.START_OBJECT) {

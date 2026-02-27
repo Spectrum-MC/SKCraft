@@ -23,6 +23,6 @@ public class SidedData<T> {
 	}
 
 	public static <T> SidedData<T> of(T singleValue) {
-		return new SidedData<T>(singleValue, singleValue);
+		return new SidedData<>(singleValue, singleValue);
 	}
 }

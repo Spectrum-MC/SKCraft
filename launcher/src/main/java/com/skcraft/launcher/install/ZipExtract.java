@@ -58,7 +58,7 @@ public class ZipExtract implements Runnable {
         } finally {
             try {
                 closer.close();
-            } catch (IOException e) {
+            } catch (IOException ignored) {
             }
         }
     }

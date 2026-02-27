@@ -18,7 +18,7 @@ public class LaunchModifier {
     private List<String> flags = Lists.newArrayList();
 
     public void setFlags(List<String> flags) {
-        this.flags = flags != null ? flags : Lists.<String>newArrayList();
+        this.flags = flags != null ? flags : Lists.newArrayList();
     }
 
     public void modify(JavaProcessBuilder builder) {

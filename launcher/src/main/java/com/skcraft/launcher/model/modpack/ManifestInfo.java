@@ -18,13 +18,7 @@ public class ManifestInfo extends BaseManifest implements Comparable<ManifestInf
 
     @Override
     public int compareTo(ManifestInfo o) {
-        if (priority > o.getPriority()) {
-            return -1;
-        } else if (priority < o.getPriority()) {
-            return 1;
-        } else {
-            return 0;
-        }
+        return Integer.compare(o.getPriority(), priority);
     }
 
 }

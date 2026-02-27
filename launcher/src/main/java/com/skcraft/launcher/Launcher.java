@@ -8,10 +8,10 @@ package com.skcraft.launcher;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
-import com.google.common.base.Supplier;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.skcraft.launcher.auth.*;
+import com.skcraft.launcher.dialog.LauncherFrame;
 import com.skcraft.launcher.launch.LaunchSupervisor;
 import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
@@ -24,19 +24,17 @@ import com.skcraft.launcher.util.SimpleLogFormatter;
 import com.sun.management.OperatingSystemMXBean;
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.Setter;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.Executors;
@@ -54,7 +52,6 @@ public final class Launcher {
 
     @Getter
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-    @Getter @Setter private Supplier<Window> mainWindowSupplier = new DefaultLauncherSupplier(this);
     @Getter private final File baseDir;
     @Getter private final Properties properties;
     @Getter private final InstanceList instances;
@@ -219,15 +216,12 @@ public final class Launcher {
 
         final long now = System.currentTimeMillis();
 
-        File[] dirs = getExtractDir().listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                try {
-                    long time = Long.parseLong(pathname.getName());
-                    return (now - time) > (1000 * 60 * 60);
-                } catch (NumberFormatException e) {
-                    return false;
-                }
+        File[] dirs = getExtractDir().listFiles(pathname -> {
+            try {
+                long time = Long.parseLong(pathname.getName());
+                return (now - time) > (1000 * 60 * 60);
+            } catch (NumberFormatException e) {
+                return false;
             }
         });
 
@@ -326,13 +320,9 @@ public final class Launcher {
      * @return the news URL
      */
     public URL getNewsURL() {
-        try {
-            return HttpRequest.url(
-                    String.format(getProperties().getProperty("newsUrl"),
-                            URLEncoder.encode(getVersion(), "UTF-8")));
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
-        }
+        return HttpRequest.url(
+                String.format(getProperties().getProperty("newsUrl"),
+                        URLEncoder.encode(getVersion(), StandardCharsets.UTF_8)));
     }
 
     /**
@@ -400,7 +390,7 @@ public final class Launcher {
      * Show the launcher.
      */
     public Window showLauncherWindow() {
-        Window window = mainWindowSupplier.get();
+        Window window = new LauncherFrame(this);
         window.setVisible(true);
 
         return window;
