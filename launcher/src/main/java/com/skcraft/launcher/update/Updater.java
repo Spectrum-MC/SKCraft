@@ -14,6 +14,7 @@ import com.skcraft.concurrency.ProgressObservable;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.LauncherException;
+import com.skcraft.launcher.LauncherProperties;
 import com.skcraft.launcher.install.Installer;
 import com.skcraft.launcher.model.java.JavaFile;
 import com.skcraft.launcher.model.java.JavaManifest;
@@ -68,8 +69,8 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
         this.launcher = launcher;
         this.instance = instance;
 
-        librarySources.add(launcher.propUrl("librariesSource"));
-        assetsSources.add(launcher.propUrl("assetsSource"));
+        librarySources.add(LauncherProperties.getInstance().getUrl("librariesSource"));
+        assetsSources.add(LauncherProperties.getInstance().getUrl("assetsSource"));
     }
 
     @Override
@@ -121,7 +122,7 @@ public class Updater extends BaseUpdater implements Callable<Instance>, Progress
      */
     private VersionManifest readVersionManifest(Manifest manifest) throws IOException, InterruptedException {
         VersionManifest version = manifest.getVersionManifest();
-        URL url = url(launcher.getProperties().getProperty("versionManifestUrl"));
+        URL url = LauncherProperties.getInstance().getUrl("versionManifestUrl");
 
         if (version == null) {
             version = fetchVersionManifest(url, manifest);

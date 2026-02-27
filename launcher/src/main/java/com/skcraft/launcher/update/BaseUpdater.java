@@ -14,7 +14,6 @@ import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.LauncherException;
 import com.skcraft.launcher.dialog.FeatureSelectionDialog;
-import com.skcraft.launcher.dialog.ProgressDialog;
 import com.skcraft.launcher.install.*;
 import com.skcraft.launcher.model.java.JavaFile;
 import com.skcraft.launcher.model.java.JavaFileDownload;
@@ -121,7 +120,7 @@ public abstract class BaseUpdater {
 
             Collections.sort(features);
 
-            SwingUtilities.invokeLater(() -> new FeatureSelectionDialog(ProgressDialog.getLastDialog(), features, BaseUpdater.this)
+            SwingUtilities.invokeLater(() -> new FeatureSelectionDialog(null, features, BaseUpdater.this)
                     .setVisible(true));
 
             synchronized (this) {

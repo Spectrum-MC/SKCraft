@@ -28,7 +28,7 @@ subprojects {
     }
 
     if (JavaVersion.current().isJava8Compatible()) {
-        // Disable doclint because legacy docs fail strict validation
+        // Java 8 turns on doclint which we fail
         tasks.withType(Javadoc) {
             options.addStringOption('Xdoclint:none', '-quiet')
         }

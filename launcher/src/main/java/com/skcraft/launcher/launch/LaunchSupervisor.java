@@ -9,28 +9,27 @@ package com.skcraft.launcher.launch;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.SettableFuture;
 import com.skcraft.concurrency.ObservableFuture;
 import com.skcraft.launcher.Instance;
 import com.skcraft.launcher.Launcher;
 import com.skcraft.launcher.auth.Session;
-import com.skcraft.launcher.dialog.AccountSelectDialog;
-import com.skcraft.launcher.dialog.ProcessConsoleFrame;
-import com.skcraft.launcher.dialog.ProgressDialog;
+import com.skcraft.launcher.fx.FxAccountDialog;
+import com.skcraft.launcher.fx.FxTaskDialogs;
 import com.skcraft.launcher.launch.LaunchOptions.UpdatePolicy;
 import com.skcraft.launcher.launch.runtime.JavaRuntime;
 import com.skcraft.launcher.model.minecraft.JavaVersion;
 import com.skcraft.launcher.persistence.Persistence;
-import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.update.Updater;
 import com.skcraft.launcher.util.SharedLocale;
-import com.skcraft.launcher.util.SwingExecutor;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nullable;
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
@@ -52,7 +51,6 @@ public class LaunchSupervisor {
     }
 
     public void launch(LaunchOptions options) {
-        final Window window = options.getWindow();
         final Instance instance = options.getInstance();
         final LaunchListener listener = options.getListener();
 
@@ -69,7 +67,7 @@ public class LaunchSupervisor {
             if (options.getSession() != null) {
                 session = options.getSession();
             } else {
-                session = AccountSelectDialog.showAccountRequest(window, launcher);
+                session = FxAccountDialog.showAccountRequest(null, launcher);
                 if (session == null) {
                     return;
                 }
@@ -88,32 +86,32 @@ public class LaunchSupervisor {
                         launcher.getExecutor().submit(updater), updater);
 
                 // Show progress
-                ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.updatingTitle"), tr("launcher.updatingStatus", instance.getTitle()));
-                SwingHelper.addErrorDialogCallback(window, future);
+                FxTaskDialogs.showProgress(future, SharedLocale.tr("launcher.updatingTitle"), tr("launcher.updatingStatus", instance.getTitle()));
+                FxTaskDialogs.addErrorDialogCallback(future);
 
                 // Update the list of instances after updating
-                future.addListener(() -> SwingUtilities.invokeLater(listener::instancesUpdated), SwingExecutor.INSTANCE);
+                future.addListener(listener::instancesUpdated, sameThreadExecutor());
 
                 // On success, launch also
                 Futures.addCallback(future, new FutureCallback<>() {
                     @Override
                     public void onSuccess(Instance result) {
-                        launch(window, instance, session, listener);
+                        launch(instance, session, listener);
                     }
 
                     @Override
                     public void onFailure(Throwable t) {
                     }
-                }, SwingExecutor.INSTANCE);
+                }, sameThreadExecutor());
             } else {
-                launch(window, instance, session, listener);
+                launch(instance, session, listener);
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            SwingHelper.showErrorDialog(window, SharedLocale.tr("launcher.noInstanceError"), SharedLocale.tr("launcher.noInstanceTitle"));
+            FxTaskDialogs.showError(SharedLocale.tr("launcher.noInstanceError"), e);
         }
     }
 
-    private void launch(Window window, Instance instance, Session session, final LaunchListener listener) {
+    private void launch(Instance instance, Session session, final LaunchListener listener) {
         final File extractDir = launcher.createExtractDir();
 
         // Get the process
@@ -122,14 +120,14 @@ public class LaunchSupervisor {
                 launcher.getExecutor().submit(task), task);
 
         // Show process for the process retrieval
-        ProgressDialog.showProgress(
-                window, processFuture, SharedLocale.tr("launcher.launchingTitle"), tr("launcher.launchingStatus", instance.getTitle()));
+        FxTaskDialogs.showProgress(
+                processFuture, SharedLocale.tr("launcher.launchingTitle"), tr("launcher.launchingStatus", instance.getTitle()));
 
         // If the process is started, get rid of this window
         Futures.addCallback(processFuture, new FutureCallback<>() {
             @Override
             public void onSuccess(Process result) {
-                SwingUtilities.invokeLater(listener::gameStarted);
+                listener.gameStarted();
             }
 
             @Override
@@ -138,9 +136,9 @@ public class LaunchSupervisor {
         });
 
         // Watch the created process
-        ListenableFuture<ProcessConsoleFrame> future = Futures.transform(
+        ListenableFuture<Void> future = Futures.transform(
                 processFuture, new LaunchProcessHandler(launcher), launcher.getExecutor());
-        SwingHelper.addErrorDialogCallback(null, future);
+        FxTaskDialogs.addErrorDialogCallback(future);
 
         // Clean up at the very end
         future.addListener(() -> {
@@ -155,7 +153,7 @@ public class LaunchSupervisor {
         // Hook up launch listener
         Futures.addCallback(future, new FutureCallback<>() {
             @Override
-            public void onSuccess(@Nullable ProcessConsoleFrame result) {
+            public void onSuccess(@Nullable Void result) {
                 // gameStarted was only invoked on success above, so only call gameClosed on success
                 listener.gameClosed();
             }
@@ -167,7 +165,7 @@ public class LaunchSupervisor {
                     log.info("Process failure: " + t.getLocalizedMessage());
                 }
             }
-        }, SwingExecutor.INSTANCE);
+        }, sameThreadExecutor());
     }
 
     @RequiredArgsConstructor
@@ -176,23 +174,19 @@ public class LaunchSupervisor {
 
         @Override
         public boolean test(JavaRuntime javaRuntime, JavaVersion javaVersion) {
-            ListenableFuture<Boolean> fut = SwingExecutor.INSTANCE.submit(() -> {
-                Object[] options = new Object[]{
-                        tr("button.cancel"),
-                        tr("button.launchAnyway"),
-                };
+            SettableFuture<Boolean> fut = SettableFuture.create();
+            Platform.runLater(() -> {
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.setTitle(tr("launcher.javaMismatchTitle"));
+                alert.setHeaderText(tr("launcher.javaMismatchTitle"));
+                alert.setContentText(tr("runner.wrongJavaVersion",
+                        javaVersion.getMajorVersion(), javaRuntime.getVersion()));
 
-                String message = tr("runner.wrongJavaVersion", javaVersion.getMajorVersion(), javaRuntime.getVersion());
-                int picked = JOptionPane.showOptionDialog(null,
-                        SwingHelper.htmlWrap(message),
-                        tr("launcher.javaMismatchTitle"),
-                        JOptionPane.DEFAULT_OPTION,
-                        JOptionPane.WARNING_MESSAGE,
-                        null,
-                        options,
-                        null);
-
-                return picked == 1;
+                ButtonType cancel = new ButtonType(tr("button.cancel"));
+                ButtonType launchAnyway = new ButtonType(tr("button.launchAnyway"));
+                alert.getButtonTypes().setAll(cancel, launchAnyway);
+                ButtonType picked = alert.showAndWait().orElse(cancel);
+                fut.set(picked == launchAnyway);
             });
 
             try {

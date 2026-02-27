@@ -11,12 +11,11 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.skcraft.launcher.auth.*;
-import com.skcraft.launcher.dialog.LauncherFrame;
+import com.skcraft.launcher.fx.FxLauncherWindow;
 import com.skcraft.launcher.launch.LaunchSupervisor;
 import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
 import com.skcraft.launcher.persistence.Persistence;
-import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.util.Environment;
 import com.skcraft.launcher.util.HttpRequest;
 import com.skcraft.launcher.util.SharedLocale;
@@ -27,8 +26,6 @@ import lombok.NonNull;
 import lombok.extern.java.Log;
 import org.apache.commons.io.FileUtils;
 
-import javax.swing.*;
-import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -36,7 +33,6 @@ import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.logging.Level;
 
@@ -53,7 +49,6 @@ public final class Launcher {
     @Getter
     private final ListeningExecutorService executor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     @Getter private final File baseDir;
-    @Getter private final Properties properties;
     @Getter private final InstanceList instances;
     @Getter private final Configuration config;
     @Getter private final AccountList accounts;
@@ -84,7 +79,6 @@ public final class Launcher {
         SharedLocale.loadBundle("com.skcraft.launcher.lang.Launcher", Locale.getDefault());
 
         this.baseDir = baseDir.getAbsoluteFile();
-        this.properties = LauncherUtils.loadProperties(Launcher.class, "launcher.properties", "com.skcraft.launcher.propertiesFile");
         this.instances = new InstanceList(this);
         this.assets = new AssetsRoot(new File(baseDir, "assets"));
         this.config = Persistence.load(new File(configDir, "config.json"), Configuration.class);
@@ -139,7 +133,7 @@ public final class Launcher {
      * @return the launcher version
      */
     public String getVersion() {
-        String version = getProperties().getProperty("version");
+        String version = LauncherProperties.getInstance().get("version");
         if (version.equals("${project.version}")) {
             return "1.0.0-SNAPSHOT";
         }
@@ -152,7 +146,7 @@ public final class Launcher {
      * @return the Yggdrasil (legacy) login service
      */
     public YggdrasilLoginService getYggdrasil() {
-        return new YggdrasilLoginService(HttpRequest.url(getProperties().getProperty("yggdrasilAuthUrl")), accounts.getClientId());
+        return new YggdrasilLoginService(LauncherProperties.getInstance().getUrl("yggdrasilAuthUrl"), accounts.getClientId());
     }
 
     /**
@@ -161,7 +155,7 @@ public final class Launcher {
      * @return the Microsoft (current) login service
      */
     public MicrosoftLoginService getMicrosoftLogin() {
-        return new MicrosoftLoginService(getProperties().getProperty("microsoftClientId"));
+        return new MicrosoftLoginService(LauncherProperties.getInstance().get("microsoftClientId"));
     }
 
     public LoginService getLoginService(UserType type) {
@@ -320,9 +314,9 @@ public final class Launcher {
      * @return the news URL
      */
     public URL getNewsURL() {
-        return HttpRequest.url(
-                String.format(getProperties().getProperty("newsUrl"),
-                        URLEncoder.encode(getVersion(), StandardCharsets.UTF_8)));
+        return HttpRequest.url(String.format(
+                LauncherProperties.getInstance().get("newsUrl"),
+                URLEncoder.encode(getVersion(), StandardCharsets.UTF_8)));
     }
 
     /**
@@ -331,7 +325,7 @@ public final class Launcher {
      * @return the packages URL
      */
     public URL getPackagesURL() {
-        return HttpRequest.url(getProperties().getProperty("packageListUrl"));
+        return LauncherProperties.getInstance().getUrl("packageListUrl");
     }
 
 
@@ -341,7 +335,7 @@ public final class Launcher {
      * @return the java manifest URL
      */
     public URL getJavaManifestURL() {
-        return HttpRequest.url(getProperties().getProperty("javaVersionManifestUrl"));
+        return LauncherProperties.getInstance().getUrl("javaVersionManifestUrl");
     }
 
     /**
@@ -351,7 +345,7 @@ public final class Launcher {
      * @return the property
      */
     public String prop(String key) {
-        return getProperties().getProperty(key);
+        return LauncherProperties.getInstance().get(key);
     }
 
     /**
@@ -362,7 +356,7 @@ public final class Launcher {
      * @return the property
      */
     public String prop(String key, String... args) {
-        return String.format(getProperties().getProperty(key), (Object[]) args);
+        return LauncherProperties.getInstance().get(key, args);
     }
 
     /**
@@ -372,7 +366,7 @@ public final class Launcher {
      * @return the property
      */
     public URL propUrl(String key) {
-        return HttpRequest.url(prop(key));
+        return LauncherProperties.getInstance().getUrl(key);
     }
 
     /**
@@ -383,17 +377,14 @@ public final class Launcher {
      * @return the property
      */
     public URL propUrl(String key, String... args) {
-        return HttpRequest.url(prop(key, args));
+        return LauncherProperties.getInstance().getUrl(key, args);
     }
 
     /**
      * Show the launcher.
      */
-    public Window showLauncherWindow() {
-        Window window = new LauncherFrame(this);
-        window.setVisible(true);
-
-        return window;
+    public void showLauncherWindow() {
+        FxLauncherWindow.show(this);
     }
 
     /**
@@ -435,22 +426,14 @@ public final class Launcher {
     public static void main(final String[] args) {
         setupLogger();
 
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Launcher launcher = createFromArguments(args);
-                    SwingHelper.setSwingProperties(tr("launcher.appTitle", launcher.getVersion()));
-                    UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-                    launcher.showLauncherWindow();
-                } catch (Throwable t) {
-                    log.log(Level.WARNING, "Load failure", t);
-                    SwingHelper.showErrorDialog(null, "Uh oh! The updater couldn't be opened because a " +
-                            "problem was encountered.", "Launcher error", t);
-                }
-            }
-        });
-
+        try {
+            LauncherProperties.init();
+            Launcher launcher = createFromArguments(args);
+            launcher.showLauncherWindow();
+        } catch (Throwable t) {
+            log.log(Level.WARNING, "Load failure", t);
+            FxLauncherWindow.showStartupError(t);
+        }
     }
 
 }

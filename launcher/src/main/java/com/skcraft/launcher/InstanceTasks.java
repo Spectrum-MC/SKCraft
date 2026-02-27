@@ -7,14 +7,12 @@
 package com.skcraft.launcher;
 
 import com.skcraft.concurrency.ObservableFuture;
-import com.skcraft.launcher.dialog.ProgressDialog;
+import com.skcraft.launcher.fx.FxTaskDialogs;
 import com.skcraft.launcher.model.java.JavaManifest;
-import com.skcraft.launcher.swing.SwingHelper;
 import com.skcraft.launcher.update.HardResetter;
 import com.skcraft.launcher.update.Remover;
 import com.skcraft.launcher.util.SharedLocale;
 
-import java.awt.*;
 import java.util.Map;
 
 import static com.skcraft.launcher.util.SharedLocale.tr;
@@ -27,40 +25,40 @@ public class InstanceTasks {
         this.launcher = launcher;
     }
 
-    public ObservableFuture<Instance> delete(Window window, Instance instance) {
+    public ObservableFuture<Instance> delete(Instance instance) {
         // Execute the deleter
         Remover resetter = new Remover(instance);
         ObservableFuture<Instance> future = new ObservableFuture<>(
                 launcher.getExecutor().submit(resetter), resetter);
 
         // Show progress
-        ProgressDialog.showProgress(
-                window, future, SharedLocale.tr("instance.deletingTitle"), tr("instance.deletingStatus", instance.getTitle()));
-        SwingHelper.addErrorDialogCallback(window, future);
+        FxTaskDialogs.showProgress(
+                future, SharedLocale.tr("instance.deletingTitle"), tr("instance.deletingStatus", instance.getTitle()));
+        FxTaskDialogs.addErrorDialogCallback(future);
 
         return future;
     }
 
-    public ObservableFuture<Instance> hardUpdate(Window window, Instance instance) {
+    public ObservableFuture<Instance> hardUpdate(Instance instance) {
         // Execute the resetter
         HardResetter resetter = new HardResetter(instance);
         ObservableFuture<Instance> future = new ObservableFuture<>(
                 launcher.getExecutor().submit(resetter), resetter);
 
         // Show progress
-        ProgressDialog.showProgress(window, future, SharedLocale.tr("instance.resettingTitle"),
+        FxTaskDialogs.showProgress(future, SharedLocale.tr("instance.resettingTitle"),
                 tr("instance.resettingStatus", instance.getTitle()));
-        SwingHelper.addErrorDialogCallback(window, future);
+        FxTaskDialogs.addErrorDialogCallback(future);
 
         return future;
     }
 
-    public ObservableFuture<InstanceList> reloadInstances(Window window) {
+    public ObservableFuture<InstanceList> reloadInstances() {
         InstanceList.Enumerator loader = launcher.getInstances().createEnumerator();
         ObservableFuture<InstanceList> future = new ObservableFuture<>(launcher.getExecutor().submit(loader), loader);
 
-        ProgressDialog.showProgress(window, future, SharedLocale.tr("launcher.checkingTitle"), SharedLocale.tr("launcher.checkingStatus"));
-        SwingHelper.addErrorDialogCallback(window, future);
+        FxTaskDialogs.showProgress(future, SharedLocale.tr("launcher.checkingTitle"), SharedLocale.tr("launcher.checkingStatus"));
+        FxTaskDialogs.addErrorDialogCallback(future);
 
         return future;
     }

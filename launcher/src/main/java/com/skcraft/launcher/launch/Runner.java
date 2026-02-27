@@ -451,7 +451,7 @@ public class Runner implements Callable<Process>, ProgressObservable {
         Map<String, String> map = new HashMap<String, String>();
 
         map.put("version_name", versionManifest.getId());
-        map.put("version_type", launcher.getProperties().getProperty("launcherShortname"));
+        map.put("version_type", LauncherProperties.getInstance().get("launcherShortname"));
 
         map.put("auth_access_token", session.getAccessToken());
         map.put("auth_session", session.getSessionToken());

@@ -1,4 +1,4 @@
-package com.skcraft.launcher.dialog.component;
+package com.skcraft.launcher.auth.component;
 
 import com.google.common.collect.Lists;
 

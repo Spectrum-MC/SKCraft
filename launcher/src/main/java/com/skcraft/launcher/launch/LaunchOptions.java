@@ -11,14 +11,11 @@ import com.skcraft.launcher.auth.Session;
 import lombok.Data;
 import lombok.Getter;
 
-import java.awt.*;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
 @Data
 public class LaunchOptions {
 
-    private final Window window;
     private final Instance instance;
     private final UpdatePolicy updatePolicy;
     private final LaunchListener listener;
@@ -27,16 +24,10 @@ public class LaunchOptions {
     @Data
     public static class Builder {
 
-        private Window window = null;
         private Instance instance;
         private UpdatePolicy updatePolicy = UpdatePolicy.UPDATE_IF_SESSION_ONLINE;
         private LaunchListener listener = new DummyLaunchListener();
         private Session session;
-
-        public Builder setWindow(Window window) {
-            this.window = window;
-            return this;
-        }
 
         public Builder setInstance(Instance instance) {
             this.instance = instance;
@@ -62,7 +53,7 @@ public class LaunchOptions {
 
         public LaunchOptions build() {
             checkNotNull(instance, "instance");
-            return new LaunchOptions(window, instance, updatePolicy, listener, session);
+            return new LaunchOptions(instance, updatePolicy, listener, session);
         }
     }
 
