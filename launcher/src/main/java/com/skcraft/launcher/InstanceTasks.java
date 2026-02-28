@@ -7,13 +7,10 @@
 package com.skcraft.launcher;
 
 import com.skcraft.concurrency.ObservableFuture;
-import com.skcraft.launcher.fx.FxTaskDialogs;
-import com.skcraft.launcher.model.java.JavaManifest;
+import com.skcraft.launcher.fx_legacy.FxTaskDialogs;
 import com.skcraft.launcher.update.HardResetter;
 import com.skcraft.launcher.update.Remover;
 import com.skcraft.launcher.util.SharedLocale;
-
-import java.util.Map;
 
 import static com.skcraft.launcher.util.SharedLocale.tr;
 

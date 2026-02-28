@@ -1,4 +1,4 @@
-package com.skcraft.launcher.fx;
+package com.skcraft.launcher.fx_legacy;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

@@ -9,6 +9,18 @@ As of 2026-02-26 it is a hardfork and will not be compatible with the original S
 
 The last compatible commit is fcf0d89.
 
+## No contribution policy
+
+For now and until the project is in a ready state, no contribution will be accepted.
+
+If you open one, it will be closed immediately.
+
+## AI Disclamer
+
+This project uses AI to assist in its development in a LIGHT way, it is NOT vibe-coded.
+
+Commits including AI code are marked as "CODEX:" and are reviewed with the most scrutiny.
+
 ## License
 
 The launcher is licensed under the GNU Lesser General Public License, version 3.

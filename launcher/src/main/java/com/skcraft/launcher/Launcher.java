@@ -11,7 +11,7 @@ import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.skcraft.launcher.auth.*;
-import com.skcraft.launcher.fx.FxLauncherWindow;
+import com.skcraft.launcher.fx_legacy.FxLauncherWindow;
 import com.skcraft.launcher.launch.LaunchSupervisor;
 import com.skcraft.launcher.model.minecraft.Library;
 import com.skcraft.launcher.model.minecraft.VersionManifest;
@@ -86,12 +86,7 @@ public final class Launcher {
 
         setDefaultConfig();
 
-        executor.submit(new Runnable() {
-            @Override
-            public void run() {
-                cleanupExtractDir();
-            }
-        });
+        executor.submit(() -> cleanupExtractDir());
     }
 
     /**

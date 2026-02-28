@@ -8,12 +8,10 @@ package com.skcraft.launcher.launch;
 
 import com.google.common.base.Function;
 import com.skcraft.launcher.Launcher;
-import com.skcraft.launcher.fx.FxProcessConsole;
+import com.skcraft.launcher.fx_legacy.FxProcessConsole;
 import javafx.application.Platform;
 import lombok.NonNull;
 import lombok.extern.java.Log;
-
-import java.util.logging.Level;
 
 /**
  * Handles post-process creation during launch.

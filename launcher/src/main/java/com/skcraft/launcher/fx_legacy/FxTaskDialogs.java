@@ -1,4 +1,4 @@
-package com.skcraft.launcher.fx;
+package com.skcraft.launcher.fx_legacy;
 
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;

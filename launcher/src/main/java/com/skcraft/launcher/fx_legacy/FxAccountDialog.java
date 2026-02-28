@@ -1,4 +1,4 @@
-package com.skcraft.launcher.fx;
+package com.skcraft.launcher.fx_legacy;
 
 import com.skcraft.launcher.Configuration;
 import com.skcraft.launcher.Launcher;
